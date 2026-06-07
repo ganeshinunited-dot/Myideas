@@ -1,0 +1,80 @@
+"use client";
+import { useState, useEffect } from "react";
+
+const quotes = [
+  "I'm not perfect at anything; I'm just a lifelong learner.",
+  "Every day is a chance to learn something completely new.",
+  "I don't have all the answers, but I have the curiosity to find them.",
+  "Striving for progress and growth, not perfection.",
+  "A student of life, learning one step at a time.",
+  "Embracing my imperfections while constantly growing.",
+  "I know very little, and that's exactly why I want to learn everything.",
+  "Perfection is an illusion; continuous learning is reality.",
+  "My biggest strength is knowing how much I still have to learn.",
+  "I am on a beautiful journey of endless discovery.",
+  "Not a master of anything, just a passionate beginner at everything.",
+  "Learning is a lifetime process, and I have only just begun.",
+  "I make mistakes, and I learn from them every single day.",
+  "Curiosity drives me far more than the desire to be perfect.",
+  "The more I learn, the more I realize how much there is to know.",
+  "I want to spend my entire life exploring, building, and learning.",
+  "Growing slowly, learning constantly, and staying humble.",
+  "There is no finish line when it comes to acquiring knowledge.",
+  "I am simply a work in progress, dedicated to improving.",
+  "Committed to the lifelong pursuit of curiosity and learning."
+];
+
+export default function Hero() {
+  const [index, setIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setIndex((prev) => (prev + 1) % quotes.length);
+        setFade(true);
+      }, 500); 
+    }, 4500); 
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <section style={{
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "100px 20px",
+      textAlign: "center"
+    }}>
+      <h1 style={{
+        fontSize: "clamp(3rem, 8vw, 5rem)",
+        fontWeight: 800,
+        color: "var(--color-primary)",
+        letterSpacing: "-0.04em",
+        lineHeight: 1.1,
+        marginBottom: 24,
+      }}>
+        Hi, I am Ganesh.
+      </h1>
+      <p style={{
+        fontSize: "clamp(1.1rem, 2vw, 1.25rem)",
+        color: "var(--color-text-muted)",
+        maxWidth: 600,
+        lineHeight: 1.6,
+        marginBottom: 40,
+        opacity: fade ? 1 : 0,
+        transition: "opacity 0.5s ease-in-out",
+        minHeight: "60px", // Prevents layout shift during quote change
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }}>
+        &quot;{quotes[index]}&quot;
+      </p>
+    </section>
+  );
+}
