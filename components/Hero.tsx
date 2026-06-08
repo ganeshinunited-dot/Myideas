@@ -27,8 +27,17 @@ const quotes = [
 export default function Hero() {
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
   useEffect(() => {
+    // Fetch and increment visitor count
+    fetch("https://api.counterapi.dev/v1/ganeshkarki/portfolio/up")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.count) setVisitorCount(data.count);
+      })
+      .catch(err => console.error("Error fetching visitor count:", err));
+
     const interval = setInterval(() => {
       setFade(false);
       setTimeout(() => {
@@ -93,6 +102,17 @@ export default function Hero() {
           <a href="/privacy-policy" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Privacy Policy</a>
           <a href="/terms-and-conditions" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Terms</a>
         </div>
+        
+        {/* Visitor Counter */}
+        {visitorCount !== null && (
+          <div style={{ fontSize: "11px", opacity: 0.7, marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>{visitorCount.toLocaleString()} visitors</span>
+          </div>
+        )}
       </div>
     </section>
   );
