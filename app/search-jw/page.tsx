@@ -3,16 +3,28 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import { searchJW } from "@/app/actions/searchJW";
 
+const LANGUAGES = [
+  { code: "en", label: "English",  nativeLabel: "English",  flag: "🇬🇧" },
+  { code: "ne", label: "Nepali",   nativeLabel: "नेपाली",    flag: "🇳🇵" },
+  { code: "hi", label: "Hindi",    nativeLabel: "हिन्दी",    flag: "🇮🇳" },
+  { code: "es", label: "Spanish",  nativeLabel: "Español",  flag: "🇪🇸" },
+  { code: "fr", label: "French",   nativeLabel: "Français",  flag: "🇫🇷" },
+];
+
 export default function SearchJWPage() {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(false);
+  const [selectedLang, setSelectedLang] = useState("en");
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   
   const [allData, setAllData] = useState<{texts: any[], images: any[], videos: any[]} | null>(null);
   const [mediaResults, setMediaResults] = useState<any[]>([]);
   const [searched, setSearched] = useState(false);
 
-  const performSearch = async (tab: string, searchQuery: string) => {
+  const currentLang = LANGUAGES.find(l => l.code === selectedLang) || LANGUAGES[0];
+
+  const performSearch = async (tab: string, searchQuery: string, lang: string = selectedLang) => {
     if (!searchQuery.trim()) return;
     
     setLoading(true);
@@ -21,7 +33,7 @@ export default function SearchJWPage() {
     else setMediaResults([]);
     
     try {
-      const data = await searchJW(searchQuery, tab);
+      const data = await searchJW(searchQuery, tab, lang);
       if (tab === "all") {
         setAllData(data as {texts: any[], images: any[], videos: any[]});
       } else {
@@ -46,6 +58,14 @@ export default function SearchJWPage() {
     }
   };
 
+  const changeLang = (langCode: string) => {
+    setSelectedLang(langCode);
+    setLangDropdownOpen(false);
+    if (query.trim() && searched) {
+      performSearch(activeTab, query, langCode);
+    }
+  };
+
   const hasResults = activeTab === "all" ? 
     (allData && (allData.texts?.length > 0 || allData.images?.length > 0 || allData.videos?.length > 0)) : 
     (mediaResults?.length > 0);
@@ -55,10 +75,104 @@ export default function SearchJWPage() {
       <Navbar />
       <div className="page-container">
         
-        <div style={{ textAlign: "center", marginBottom: 30 }}>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
           <h1 style={{ fontSize: "clamp(2rem, 5vw, 2.5rem)", fontWeight: 700, color: "var(--color-primary)", marginBottom: 8 }}>
             Search JW
           </h1>
+        </div>
+
+        {/* Language Selector */}
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "center", 
+          marginBottom: 16, 
+          position: "relative" 
+        }}>
+          <button
+            onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 18px",
+              borderRadius: 24,
+              border: "1px solid var(--color-border)",
+              background: "#fff",
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--color-text)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <span style={{ fontSize: 18 }}>{currentLang.flag}</span>
+            <span>{currentLang.nativeLabel}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, transform: langDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+
+          {/* Dropdown */}
+          {langDropdownOpen && (
+            <>
+              {/* Backdrop to close dropdown */}
+              <div 
+                onClick={() => setLangDropdownOpen(false)} 
+                style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 49 }} 
+              />
+              <div style={{
+                position: "absolute",
+                top: "100%",
+                marginTop: 6,
+                background: "#fff",
+                border: "1px solid var(--color-border)",
+                borderRadius: 12,
+                boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                zIndex: 50,
+                overflow: "hidden",
+                minWidth: 180,
+                animation: "fadeSlideDown 0.15s ease-out",
+              }}>
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => changeLang(lang.code)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      width: "100%",
+                      padding: "12px 18px",
+                      border: "none",
+                      background: selectedLang === lang.code ? "var(--color-bg-alt)" : "transparent",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      fontWeight: selectedLang === lang.code ? 600 : 400,
+                      color: selectedLang === lang.code ? "var(--color-primary)" : "var(--color-text)",
+                      textAlign: "left",
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--color-bg-alt)"}
+                    onMouseLeave={e => e.currentTarget.style.background = selectedLang === lang.code ? "var(--color-bg-alt)" : "transparent"}
+                  >
+                    <span style={{ fontSize: 18 }}>{lang.flag}</span>
+                    <div>
+                      <div>{lang.nativeLabel}</div>
+                      {lang.nativeLabel !== lang.label && (
+                        <div style={{ fontSize: 11, color: "var(--color-text-light)", marginTop: 1 }}>{lang.label}</div>
+                      )}
+                    </div>
+                    {selectedLang === lang.code && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: "auto" }}>
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <form 
@@ -78,7 +192,7 @@ export default function SearchJWPage() {
             type="text" 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search jw.org topics..." 
+            placeholder={selectedLang === "ne" ? "jw.org मा खोज्नुहोस्..." : selectedLang === "hi" ? "jw.org पर खोजें..." : "Search jw.org topics..."} 
             required
             style={{ 
               flex: 1, 
@@ -87,7 +201,7 @@ export default function SearchJWPage() {
               border: "none", 
               outline: "none",
               color: "var(--color-text)",
-              minWidth: 0 // fixes mobile flex overflow
+              minWidth: 0
             }} 
           />
           <button 
@@ -104,7 +218,7 @@ export default function SearchJWPage() {
               whiteSpace: "nowrap"
             }}
           >
-            {loading ? "..." : "Search"}
+            {loading ? "..." : selectedLang === "ne" ? "खोज" : selectedLang === "hi" ? "खोजें" : "Search"}
           </button>
         </form>
 
@@ -155,13 +269,13 @@ export default function SearchJWPage() {
         {/* Loading & Empty states */}
         {loading && (
           <div style={{ textAlign: "center", padding: "40px", color: "var(--color-text-muted)" }}>
-            Fetching authentic results from jw.org...
+            {selectedLang === "ne" ? "jw.org बाट खोजी गर्दै..." : selectedLang === "hi" ? "jw.org से खोज रहे हैं..." : "Fetching authentic results from jw.org..."}
           </div>
         )}
 
         {!loading && searched && !hasResults && (
           <div style={{ textAlign: "center", padding: "40px", color: "var(--color-text-muted)" }}>
-            No results found for &quot;{query}&quot;.
+            No results found for &quot;{query}&quot; in {currentLang.nativeLabel}.
           </div>
         )}
 
@@ -173,7 +287,7 @@ export default function SearchJWPage() {
             {allData.texts?.length > 0 && (
               <div>
                 <h2 style={{ fontSize: "1.2rem", fontWeight: 600, color: "var(--color-text)", marginBottom: 16 }}>
-                  Articles
+                  {selectedLang === "ne" ? "लेखहरू" : selectedLang === "hi" ? "लेख" : "Articles"}
                 </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   {allData.texts.map((res: any, i: number) => (
@@ -184,7 +298,7 @@ export default function SearchJWPage() {
                       }}
                     >
                       <div style={{ fontSize: "0.75rem", color: "var(--color-text-light)", marginBottom: 4 }}>
-                        {new URL(res.link).hostname}
+                        {(() => { try { return new URL(res.link).hostname; } catch { return "wol.jw.org"; } })()}
                       </div>
                       <h3 style={{ fontSize: "1.05rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: 6 }}>
                         {res.title}
@@ -202,7 +316,7 @@ export default function SearchJWPage() {
             {allData.images?.length > 0 && (
               <div>
                 <h2 style={{ fontSize: "1.2rem", fontWeight: 600, color: "var(--color-text)", marginBottom: 16 }}>
-                  Images
+                  {selectedLang === "ne" ? "तस्बिरहरू" : selectedLang === "hi" ? "चित्र" : "Images"}
                 </h2>
                 <div className="all-tab-grid">
                   {allData.images.map((res: any, i: number) => (
@@ -224,7 +338,7 @@ export default function SearchJWPage() {
             {allData.videos?.length > 0 && (
               <div>
                 <h2 style={{ fontSize: "1.2rem", fontWeight: 600, color: "var(--color-text)", marginBottom: 16 }}>
-                  Videos
+                  {selectedLang === "ne" ? "भिडियोहरू" : selectedLang === "hi" ? "वीडियो" : "Videos"}
                 </h2>
                 <div className="all-tab-grid">
                   {allData.videos.map((res: any, i: number) => (
@@ -313,6 +427,14 @@ export default function SearchJWPage() {
           </div>
         )}
       </div>
+
+      {/* Dropdown animation */}
+      <style jsx>{`
+        @keyframes fadeSlideDown {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </main>
   );
 }
