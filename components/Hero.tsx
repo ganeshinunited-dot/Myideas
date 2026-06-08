@@ -34,6 +34,11 @@ export default function Hero() {
   const [loadingEmotion, setLoadingEmotion] = useState(false);
   const [emotionArticles, setEmotionArticles] = useState<any[]>([]);
 
+  // Custom AI State
+  const [customInput, setCustomInput] = useState("");
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
   useEffect(() => {
     // Fetch and increment visitor count
     fetch("https://api.counterapi.dev/v1/ganeshkarki/portfolio/up")
@@ -56,25 +61,67 @@ export default function Hero() {
 
   const handleEmotionClick = async (emotion: typeof EMOTIONS[0]) => {
     if (selectedEmotion === emotion.id) {
-      // Toggle off
       setSelectedEmotion(null);
       setEmotionArticles([]);
       return;
     }
     
+    setCustomInput("");
+    setAiMessage(null);
     setSelectedEmotion(emotion.id);
     setLoadingEmotion(true);
     setEmotionArticles([]);
     
     try {
-      const res: any = await searchJW(emotion.query, "all", "en"); // Fetch in English for best global matches
+      const res: any = await searchJW(emotion.query, "all", "en"); 
       if (res && res.texts) {
-        setEmotionArticles(res.texts.slice(0, 3)); // Get top 3
+        setEmotionArticles(res.texts.slice(0, 3));
       }
     } catch (err) {
       console.error(err);
     } finally {
       setLoadingEmotion(false);
+    }
+  };
+
+  const handleCustomSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customInput.trim()) return;
+
+    setSelectedEmotion(null);
+    setEmotionArticles([]);
+    setAiMessage(null);
+    setIsAiLoading(true);
+
+    try {
+      const fullPrompt = `You are a deeply empathetic assistant. The user says: "${customInput}". 
+Reply with a warm, comforting paragraph in the exact SAME language the user used (e.g. if they typed in Romanized Nepali like 'garo chha', reply in Romanized Nepali). Keep it under 4 sentences.
+At the very end of your response, on a new line, write EXACTLY: KEYWORDS: [1 or 2 english keywords representing their core issue, e.g. anxiety, stress].`;
+
+      const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}`);
+      const text = await res.text();
+      
+      const keywordMatch = text.match(/KEYWORDS:\s*(.*)/i);
+      let keywords = "comfort";
+      let message = text;
+
+      if (keywordMatch && keywordMatch[1]) {
+        keywords = keywordMatch[1].replace(/[^a-zA-Z\s,]/g, '').trim();
+        message = text.replace(keywordMatch[0], '').trim();
+      }
+
+      setAiMessage(message);
+
+      // Fetch JW.org articles using the extracted keywords
+      const searchRes: any = await searchJW(keywords, "all", "en");
+      if (searchRes && searchRes.texts) {
+        setEmotionArticles(searchRes.texts.slice(0, 3));
+      }
+    } catch (err) {
+      console.error(err);
+      setAiMessage("I am so sorry you are feeling this way. You are not alone, and there is always hope and help available.");
+    } finally {
+      setIsAiLoading(false);
     }
   };
 
@@ -140,7 +187,7 @@ export default function Hero() {
         &quot;{quotes[index]}&quot;
       </p>
 
-      {/* Emotion Section */}
+      {/* Emotion & AI Section */}
       <div style={{
         width: "100%",
         maxWidth: "600px",
@@ -169,8 +216,6 @@ export default function Hero() {
           scrollSnapType: "x mandatory",
           WebkitOverflowScrolling: "touch",
         }}>
-
-          
           {EMOTIONS.map(emotion => (
             <button
               key={emotion.id}
@@ -195,40 +240,104 @@ export default function Hero() {
           ))}
         </div>
 
+        {/* AI Custom Input */}
+        <div style={{ width: "100%", padding: "0 24px" }}>
+          <div style={{ display: "flex", alignItems: "center", margin: "8px 0 16px" }}>
+            <div style={{ flex: 1, height: "1px", background: "var(--color-border)" }}></div>
+            <span style={{ padding: "0 12px", fontSize: "0.8rem", color: "var(--color-text-light)", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>OR</span>
+            <div style={{ flex: 1, height: "1px", background: "var(--color-border)" }}></div>
+          </div>
+          
+          <form onSubmit={handleCustomSubmit} style={{ display: "flex", gap: "8px" }}>
+            <input 
+              type="text" 
+              value={customInput}
+              onChange={(e) => setCustomInput(e.target.value)}
+              placeholder="Type how you feel (e.g. malai life katnai garo chha...)"
+              style={{
+                flex: 1,
+                padding: "12px 16px",
+                borderRadius: "16px",
+                border: "1px solid var(--color-border)",
+                fontSize: "0.95rem",
+                outline: "none",
+                background: "var(--color-bg-alt)",
+              }}
+            />
+            <button 
+              type="submit" 
+              disabled={!customInput.trim() || isAiLoading}
+              style={{
+                background: "var(--color-primary)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "16px",
+                padding: "0 20px",
+                fontWeight: 600,
+                cursor: (!customInput.trim() || isAiLoading) ? "not-allowed" : "pointer",
+                opacity: (!customInput.trim() || isAiLoading) ? 0.7 : 1,
+                transition: "background 0.2s ease"
+              }}
+            >
+              Ask
+            </button>
+          </form>
+        </div>
+
         {/* Dynamic Results Area */}
-        {selectedEmotion && (
-          <div style={{ width: "100%", padding: "0 24px", textAlign: "left", marginTop: "8px" }}>
-            {loadingEmotion ? (
+        {(selectedEmotion || isAiLoading || aiMessage) && (
+          <div style={{ width: "100%", padding: "0 24px", textAlign: "left", marginTop: "24px" }}>
+            {(loadingEmotion || isAiLoading) ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "20px 0", color: "var(--color-primary)", fontWeight: 500, fontSize: "0.9rem" }}>
-                <span className="loading-dots">Finding the best articles</span>
-              </div>
-            ) : emotionArticles.length > 0 ? (
-              <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginBottom: "4px" }}>Suggested for you:</p>
-                {emotionArticles.map((article, i) => (
-                  <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
-                    display: "block",
-                    padding: "16px",
-                    background: "var(--color-bg-alt)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "12px",
-                    textDecoration: "none",
-                    transition: "transform 0.2s ease, box-shadow 0.2s ease"
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
-                  >
-                    <h4 style={{ color: "var(--color-primary-dark)", margin: "0 0 6px 0", fontSize: "0.95rem", lineHeight: 1.3 }}>{article.title}</h4>
-                    <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.85rem", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                      {article.description}
-                    </p>
-                  </a>
-                ))}
+                <span className="loading-dots">{isAiLoading ? "Understanding your feelings" : "Finding the best articles"}</span>
               </div>
             ) : (
-              <p style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "0.9rem", padding: "16px" }}>
-                Could not find specific articles right now.
-              </p>
+              <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                
+                {aiMessage && (
+                  <div style={{ 
+                    padding: "16px", 
+                    background: "rgba(37, 99, 235, 0.05)", 
+                    borderRadius: "16px", 
+                    border: "1px solid rgba(37, 99, 235, 0.1)",
+                    color: "var(--color-text)",
+                    fontSize: "0.95rem",
+                    lineHeight: 1.6,
+                    fontStyle: "italic"
+                  }}>
+                    {aiMessage}
+                  </div>
+                )}
+
+                {emotionArticles.length > 0 ? (
+                  <>
+                    <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginBottom: "0px", fontWeight: 600 }}>Suggested reading for you:</p>
+                    {emotionArticles.map((article, i) => (
+                      <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
+                        display: "block",
+                        padding: "16px",
+                        background: "var(--color-bg-alt)",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: "12px",
+                        textDecoration: "none",
+                        transition: "transform 0.2s ease, box-shadow 0.2s ease"
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+                      >
+                        <h4 style={{ color: "var(--color-primary-dark)", margin: "0 0 6px 0", fontSize: "0.95rem", lineHeight: 1.3 }}>{article.title}</h4>
+                        <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.85rem", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                          {article.description}
+                        </p>
+                      </a>
+                    ))}
+                  </>
+                ) : (
+                  <p style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "0.9rem", padding: "16px" }}>
+                    Could not find specific articles right now.
+                  </p>
+                )}
+              </div>
             )}
           </div>
         )}
@@ -249,8 +358,6 @@ export default function Hero() {
           <a href="/privacy-policy" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Terms & Privacy Policy</a>
         </div>
       </div>
-      
-
     </section>
   );
 }

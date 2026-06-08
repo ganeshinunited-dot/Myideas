@@ -62,24 +62,6 @@ export default function Navbar() {
               </a>
             ))}
 
-            {/* CTA */}
-            <a href="/try-free-ai" style={{
-              fontSize: 14,
-              fontWeight: 600,
-              padding: "8px 20px",
-              borderRadius: 8,
-              background: "var(--color-primary)",
-              color: "#fff",
-              textDecoration: "none",
-              marginLeft: 8,
-              transition: "background 0.2s ease",
-              whiteSpace: "nowrap",
-            }}
-              onMouseEnter={e => (e.currentTarget.style.background = "var(--color-primary-dark)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "var(--color-primary)")}
-            >
-              Try Free AI
-            </a>
           </div>
         </div>
       </header>
@@ -101,17 +83,6 @@ export default function Navbar() {
       }}>
         <a href="/" style={{ fontWeight: 700, fontSize: 18, color: "var(--color-text)", textDecoration: "none" }}>
           Ganesh<span style={{ color: "var(--color-primary)" }}>.</span>
-        </a>
-        <a href="/try-free-ai" style={{
-          fontSize: 13,
-          fontWeight: 600,
-          padding: "6px 14px",
-          borderRadius: 8,
-          background: "var(--color-primary)",
-          color: "#fff",
-          textDecoration: "none",
-        }}>
-          AI Chat
         </a>
       </header>
 
