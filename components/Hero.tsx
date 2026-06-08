@@ -40,6 +40,7 @@ export default function Hero() {
 
   // Custom AI State
   const [customInput, setCustomInput] = useState("");
+  const [lastQuery, setLastQuery] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -102,6 +103,7 @@ export default function Hero() {
     }
     
     setCustomInput("");
+    setLastQuery(emotion.query);
     setSelectedEmotion(emotion.id);
     setLoadingEmotion(true);
     setEmotionArticles([]);
@@ -125,6 +127,7 @@ export default function Hero() {
     if (!customInput.trim()) return;
 
     setSelectedEmotion(null);
+    setLastQuery(customInput);
     setEmotionArticles([]);
     setErrorMessage(null);
     setIsAiLoading(true);
@@ -200,6 +203,29 @@ export default function Hero() {
       <div style={{ width: "100%", maxWidth: "600px", zIndex: 10 }}>
         {(selectedEmotion || isAiLoading || emotionArticles.length > 0 || errorMessage) && (
           <div style={{ width: "100%", textAlign: "left", marginBottom: "40px" }}>
+            {lastQuery && (
+              <div style={{ 
+                display: "flex", 
+                justifyContent: "flex-end", 
+                marginBottom: "24px",
+                padding: "0 16px"
+              }}>
+                <div style={{
+                  background: "var(--color-bg-alt)",
+                  color: "var(--color-text)",
+                  padding: "12px 20px",
+                  borderRadius: "20px 20px 4px 20px",
+                  fontSize: "1rem",
+                  maxWidth: "85%",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                  border: "1px solid var(--color-border)",
+                  wordBreak: "break-word"
+                }}>
+                  {lastQuery}
+                </div>
+              </div>
+            )}
+            
             {(loadingEmotion || isAiLoading) ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", color: "var(--color-primary)", fontWeight: 500, fontSize: "1.1rem" }}>
                 <span className="loading-dots">{isAiLoading ? "Finding the best articles" : "Finding the best articles"}</span>
@@ -243,9 +269,6 @@ export default function Hero() {
 
         {/* Fixed Chat Input Area */}
       <div className="chat-box-container">
-        {/* Subtle top gradient bar */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, var(--color-primary-dark), var(--color-primary), var(--color-accent))", borderTopLeftRadius: "24px", borderTopRightRadius: "24px" }}></div>
-
         {!isChatStarted && (
           <h3 style={{ 
             fontSize: "1.4rem", 
