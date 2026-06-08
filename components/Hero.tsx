@@ -17,12 +17,13 @@ const quotes = [
 ];
 
 const EMOTIONS = [
-  { id: "worried", label: "Worried 😟", query: "anxiety worry" },
-  { id: "sad", label: "Sad 😢", query: "sadness depression grief" },
-  { id: "discouraged", label: "Discouraged 😞", query: "discouraged feeling down" },
-  { id: "thankful", label: "Thankful 🙏", query: "gratitude thankful" },
-  { id: "strength", label: "Need Strength 💪", query: "endurance strength from God" },
-  { id: "angry", label: "Angry 😠", query: "anger control resentment" },
+  { id: "anxiety", label: "Overcoming Anxiety", query: "anxiety worry stress" },
+  { id: "peace", label: "Inner Peace", query: "peace of mind calmness" },
+  { id: "grief", label: "Coping with Grief", query: "grief loss death" },
+  { id: "purpose", label: "Finding Purpose", query: "meaning of life purpose" },
+  { id: "resilience", label: "Building Resilience", query: "endurance strength courage" },
+  { id: "family", label: "Family & Marriage", query: "family marriage parenting" },
+  { id: "hope", label: "Seeking Hope", query: "hope future promises" },
 ];
 
 export default function Hero() {
