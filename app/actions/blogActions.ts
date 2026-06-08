@@ -1,10 +1,11 @@
 "use server";
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { checkAuth } from "./authActions";
 import { revalidatePath } from "next/cache";
 
-const DATA_FILE = path.join(process.cwd(), "data", "blogs.json");
+const DATA_FILE = path.join(os.tmpdir(), "blogs.json");
 
 export type BlogPost = {
   id: string;
@@ -15,12 +16,8 @@ export type BlogPost = {
   createdAt: string;
 };
 
-// Helper to ensure data directory and file exist
+// Helper to ensure data file exists in tmp dir
 function ensureDataFile() {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
   if (!fs.existsSync(DATA_FILE)) {
     fs.writeFileSync(DATA_FILE, JSON.stringify([]));
   }
@@ -55,21 +52,15 @@ export async function createBlog(formData: FormData) {
     return { error: "Title and content are required" };
   }
 
-  // Handle Image Upload
+  // Handle Image Upload - Convert to Base64 to avoid read-only file system issues
   if (imageFile && imageFile.size > 0) {
     try {
       const buffer = Buffer.from(await imageFile.arrayBuffer());
-      const filename = `${Date.now()}-${imageFile.name.replace(/\s+/g, '-')}`;
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      
-      fs.writeFileSync(path.join(uploadDir, filename), buffer);
-      imageUrl = `/uploads/${filename}`;
+      const base64 = buffer.toString("base64");
+      const mimeType = imageFile.type || "image/jpeg";
+      imageUrl = `data:${mimeType};base64,${base64}`;
     } catch (err) {
-      console.error("Failed to upload image", err);
+      console.error("Failed to process image", err);
     }
   }
 
@@ -110,3 +101,4 @@ export async function deleteBlog(id: string) {
     return { error: "Failed to delete blog" };
   }
 }
+
