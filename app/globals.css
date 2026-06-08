@@ -155,3 +155,11 @@ html, body {
   width: 24px;
   height: 24px;
 }
+
+/* Hero section mobile fix - fit exactly in viewport */
+@media (max-width: 767px) {
+  .hero-section {
+    min-height: 100dvh !important;
+    padding: 70px 16px 90px !important;
+  }
+}

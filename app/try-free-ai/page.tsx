@@ -75,10 +75,10 @@ export default function TryFreeAIPage() {
   };
 
   return (
-    <main style={{ minHeight: "100vh", background: "var(--color-bg)", display: "flex", flexDirection: "column" }}>
+    <main style={{ height: "100vh", background: "var(--color-bg)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <Navbar />
       
-      <div className="page-container" style={{ flex: 1, paddingBottom: 0 }}>
+      <div className="page-container" style={{ flex: 1, paddingBottom: 0, overflow: "hidden" }}>
         
         <div style={{ textAlign: "center", marginBottom: 16 }}>
           <h1 style={{ fontSize: "clamp(1.5rem, 5vw, 2rem)", fontWeight: 700, color: "var(--color-primary)", marginBottom: 4 }}>
