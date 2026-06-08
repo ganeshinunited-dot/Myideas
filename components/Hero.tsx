@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { searchJW } from "@/app/actions/searchJW";
 import { processEmotionChat } from "@/app/actions/chatAction";
 
@@ -40,6 +40,13 @@ export default function Hero() {
   const [customInput, setCustomInput] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
 
+  // Drag to scroll state
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [dragMoved, setDragMoved] = useState(false);
+
   useEffect(() => {
     // Fetch and increment visitor count
     fetch("https://api.counterapi.dev/v1/ganeshkarki/portfolio/up")
@@ -60,7 +67,30 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setDragMoved(false);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // scroll-fast multiplier
+    if (Math.abs(walk) > 5) setDragMoved(true);
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsDragging(false);
+  };
+
   const handleEmotionClick = async (emotion: typeof EMOTIONS[0]) => {
+    if (dragMoved) return; // Prevent click if the user was dragging
+
     if (selectedEmotion === emotion.id) {
       setSelectedEmotion(null);
       setEmotionArticles([]);
@@ -200,14 +230,22 @@ export default function Hero() {
         </h3>
         
         {/* Horizontal Scrollable Emotions */}
-        <div className="hide-scrollbar" style={{
-          display: "flex",
-          gap: "12px",
-          width: "100%",
-          overflowX: "auto",
-          padding: "0 24px 16px",
-          scrollSnapType: "x mandatory",
-          WebkitOverflowScrolling: "touch",
+        <div 
+          ref={scrollRef}
+          className="hide-scrollbar" 
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseUpOrLeave}
+          onMouseUp={handleMouseUpOrLeave}
+          onMouseMove={handleMouseMove}
+          style={{
+            display: "flex",
+            gap: "12px",
+            width: "100%",
+            overflowX: "auto",
+            padding: "0 24px 16px",
+            WebkitOverflowScrolling: "touch",
+            cursor: isDragging ? "grabbing" : "grab",
+            userSelect: "none"
         }}>
           {EMOTIONS.map(emotion => (
             <button
