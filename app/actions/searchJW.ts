@@ -26,33 +26,61 @@ export async function searchJW(query: string, tab: string = "all", lang: string 
     if (tab === "all") {
       const texts: any[] = [];
 
-      // Fetch native WOL results directly for ALL languages (Bypasses DDG blocks and ensures curated JW articles)
-      const wolQuery = encodeURIComponent(query);
-      const searchUrl = `https://wol.jw.org/${langConfig.urlLang}/wol/s/${langConfig.region}/${langConfig.lp}?q=${wolQuery}`;
-      
-      const res = await fetch(searchUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-      });
-      const html = await res.text();
-      const $ = cheerio.load(html);
-
-      $('ul.directory.resultContentTopic li.caption a.lnk').each((_i, el) => {
-        if (texts.length >= 5) return;
-        const title = $(el).text().trim();
-        const link = 'https://wol.jw.org' + $(el).attr('href');
-        if (title) texts.push({ title, link, description: "JW.org Article", image: null });
-      });
-
-      if (texts.length === 0) {
-        $('a.lnk').each((_i, el) => {
-          if (texts.length >= 5) return;
-          const title = $(el).text().trim();
-          let link = $(el).attr('href');
-          if (link && link.startsWith('/')) link = 'https://wol.jw.org' + link;
-          if (title && link && (link.includes('/library/') || link.includes('/wol/d/'))) {
-            texts.push({ title, link, description: "JW.org Article", image: null });
-          }
+      // 1. Fetch Text/Articles from Google (Searches entire JW ecosystem: Music, Videos, Articles)
+      try {
+        const googleResponse = await google.search(`site:jw.org OR site:wol.jw.org ${query}`, {
+          page: 0,
+          safe: false,
+          additional_params: { hl: lang } // Prefer results in user's language
         });
+        
+        if (googleResponse && googleResponse.results && googleResponse.results.length > 0) {
+          googleResponse.results.slice(0, 6).forEach(res => {
+            texts.push({
+              title: res.title,
+              link: res.url,
+              description: res.description || "JW.org Content",
+              image: null
+            });
+          });
+        }
+      } catch (e) {
+        console.error("Google text search error:", e);
+      }
+
+      // 1.b Fallback to Native WOL Scraper if Google fails or returns nothing
+      if (texts.length === 0) {
+        try {
+          const wolQuery = encodeURIComponent(query);
+          const searchUrl = `https://wol.jw.org/${langConfig.urlLang}/wol/s/${langConfig.region}/${langConfig.lp}?q=${wolQuery}`;
+          
+          const res = await fetch(searchUrl, {
+              headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+          });
+          const html = await res.text();
+          const $ = cheerio.load(html);
+
+          $('ul.directory.resultContentTopic li.caption a.lnk').each((_i, el) => {
+            if (texts.length >= 5) return;
+            const title = $(el).text().trim();
+            const link = 'https://wol.jw.org' + $(el).attr('href');
+            if (title) texts.push({ title, link, description: "Watchtower Library Article", image: null });
+          });
+
+          if (texts.length === 0) {
+            $('a.lnk').each((_i, el) => {
+              if (texts.length >= 5) return;
+              const title = $(el).text().trim();
+              let link = $(el).attr('href');
+              if (link && link.startsWith('/')) link = 'https://wol.jw.org' + link;
+              if (title && link && (link.includes('/library/') || link.includes('/wol/d/'))) {
+                texts.push({ title, link, description: "Watchtower Library Article", image: null });
+              }
+            });
+          }
+        } catch (e) {
+          console.error("WOL scrape error:", e);
+        }
       }
 
       // 2. Fetch Images from Google
