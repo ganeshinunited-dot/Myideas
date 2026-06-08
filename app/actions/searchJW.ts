@@ -17,37 +17,68 @@ export async function searchJW(query: string, tab: string = "all", lang: string 
 
   try {
     if (tab === "all") {
-      // 1. Fetch text results using DuckDuckGo targeting JW.org library
-      const ddgQuery = encodeURIComponent(`site:jw.org/${langConfig.urlLang}/library/ ${query}`);
-      const searchUrl = `https://html.duckduckgo.com/html/?q=${ddgQuery}`;
-      
-      const res = await fetch(searchUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64 AppleWebKit/537.36)' }
-      });
-      const html = await res.text();
-      const $ = cheerio.load(html);
-      
       const texts: any[] = [];
 
-      $('.result').each((_i, el) => {
-        if (texts.length >= 5) return;
-        const title = $(el).find('.result__title a').text().trim();
-        const rawLink = $(el).find('.result__url').attr('href');
-        const snippet = $(el).find('.result__snippet').text().trim();
+      if (langConfig.urlLang === "en") {
+        // 1. Fetch text results using DuckDuckGo targeting JW.org library (Works well for English)
+        const ddgQuery = encodeURIComponent(`site:jw.org/${langConfig.urlLang}/library/ ${query}`);
+        const searchUrl = `https://html.duckduckgo.com/html/?q=${ddgQuery}`;
         
-        let link = rawLink;
-        if (rawLink && rawLink.includes('uddg=')) {
-          try {
-            const url = new URL('https:' + rawLink);
-            const uddg = url.searchParams.get('uddg');
-            if (uddg) link = decodeURIComponent(uddg);
-          } catch(e) {}
-        }
+        const res = await fetch(searchUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64 AppleWebKit/537.36)' }
+        });
+        const html = await res.text();
+        const $ = cheerio.load(html);
+
+        $('.result').each((_i, el) => {
+          if (texts.length >= 5) return;
+          const title = $(el).find('.result__title a').text().trim();
+          const rawLink = $(el).find('.result__url').attr('href');
+          const snippet = $(el).find('.result__snippet').text().trim();
+          
+          let link = rawLink;
+          if (rawLink && rawLink.includes('uddg=')) {
+            try {
+              const url = new URL('https:' + rawLink);
+              const uddg = url.searchParams.get('uddg');
+              if (uddg) link = decodeURIComponent(uddg);
+            } catch(e) {}
+          }
+          
+          if (title && link) {
+            texts.push({ title, link, description: snippet, image: null });
+          }
+        });
+      } else {
+        // 2. Fetch native WOL results for Nepali or other languages (DuckDuckGo fails indexing these)
+        const wolQuery = encodeURIComponent(query);
+        const searchUrl = `https://wol.jw.org/${langConfig.urlLang}/wol/s/${langConfig.region}/${langConfig.lp}?q=${wolQuery}`;
         
-        if (title && link) {
-          texts.push({ title, link, description: snippet, image: null });
+        const res = await fetch(searchUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+        });
+        const html = await res.text();
+        const $ = cheerio.load(html);
+
+        $('ul.directory.resultContentTopic li.caption a.lnk').each((_i, el) => {
+          if (texts.length >= 5) return;
+          const title = $(el).text().trim();
+          const link = 'https://wol.jw.org' + $(el).attr('href');
+          if (title) texts.push({ title, link, description: "JW.org Article", image: null });
+        });
+
+        if (texts.length === 0) {
+          $('a.lnk').each((_i, el) => {
+            if (texts.length >= 5) return;
+            const title = $(el).text().trim();
+            let link = $(el).attr('href');
+            if (link && link.startsWith('/')) link = 'https://wol.jw.org' + link;
+            if (title && link && (link.includes('/library/') || link.includes('/wol/d/'))) {
+              texts.push({ title, link, description: "JW.org Article", image: null });
+            }
+          });
         }
-      });
+      }
 
       // 2. Fetch Images from Google
       let images: any[] = [];

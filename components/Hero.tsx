@@ -99,9 +99,9 @@ export default function Hero() {
         return;
       }
 
-      // Fetch JW.org articles using the extracted keywords
+      // Fetch JW.org articles using the extracted keywords and detected language
       if (aiRes.keywords) {
-        const searchRes: any = await searchJW(aiRes.keywords, "all", "en");
+        const searchRes: any = await searchJW(aiRes.keywords, "all", aiRes.lang || "en");
         if (searchRes && searchRes.texts) {
           setEmotionArticles(searchRes.texts.slice(0, 3));
         }

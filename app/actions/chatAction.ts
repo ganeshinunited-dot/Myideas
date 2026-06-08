@@ -9,9 +9,12 @@ export async function processEmotionChat(userInput: string) {
 
   const prompt = `You are a strict keyword extractor for a search engine. 
 The user says: "${userInput}". 
-Analyze their true intent, emotion, or question.
-Output ONLY 1 or 2 english keywords that represent their core issue or topic (e.g. anxiety, purpose of life, marriage, stress, hope).
-DO NOT write any other words, explanations, or conversational text. ONLY output the keywords.`;
+Analyze their true intent.
+1. Detect their language. If it's Nepali or Romanized Nepali, the code is "ne". If English, "en".
+2. Extract 1 or 2 search keywords IN THAT EXACT LANGUAGE (e.g. if Nepali, output "चिन्ता", "निराशा". If English, "anxiety", "depression").
+DO NOT write any other words or conversational text. Output EXACTLY in this format:
+LANGUAGE_CODE: [en or ne]
+KEYWORDS: [keywords]`;
 
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -36,10 +39,16 @@ DO NOT write any other words, explanations, or conversational text. ONLY output 
     const data = await res.json();
     const text = data.choices[0].message.content;
 
-    // The AI is instructed to ONLY output the keywords.
-    const keywords = text.replace(/[^a-zA-Z\s,]/g, '').trim();
+    let keywords = "comfort";
+    let lang = "en";
 
-    return { keywords };
+    const langMatch = text.match(/LANGUAGE_CODE:\s*(en|ne)/i);
+    const keyMatch = text.match(/KEYWORDS:\s*(.*)/i);
+
+    if (langMatch && langMatch[1]) lang = langMatch[1].toLowerCase();
+    if (keyMatch && keyMatch[1]) keywords = keyMatch[1].trim();
+
+    return { keywords, lang };
   } catch (error) {
     console.error("Chat Action Error:", error);
     return { error: "Failed to connect to AI server." };
