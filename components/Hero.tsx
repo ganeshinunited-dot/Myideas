@@ -127,14 +127,14 @@ export default function Hero() {
     try {
       const aiRes = await processEmotionChat(customInput);
       
-      if (aiRes.error) {
+      if ("error" in aiRes && aiRes.error) {
         console.error(aiRes.error);
         return;
       }
 
       // Fetch JW.org articles using the extracted keywords and detected language
-      if (aiRes.keywords) {
-        const searchRes: any = await searchJW(aiRes.keywords, "all", aiRes.lang || "en");
+      if ("keywords" in aiRes && aiRes.keywords) {
+        const searchRes: any = await searchJW(aiRes.keywords as string, "all", (aiRes as any).lang || "en");
         if (searchRes && searchRes.texts) {
           setEmotionArticles(searchRes.texts.slice(0, 3));
         }
