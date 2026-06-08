@@ -1,11 +1,10 @@
 @import "tailwindcss";
 
-@theme {
+:root {
   --color-bg: #ffffff;
   --color-bg-alt: #f4f6f9;
   --color-primary: #4a6fa5;
   --color-primary-dark: #3b5998;
-  --color-primary-light: #6b8fc7;
   --color-accent: #2b6cb0;
   --color-text: #1a202c;
   --color-text-muted: #5a6a7a;
@@ -13,21 +12,34 @@
   --color-border: #e2e8f0;
 }
 
+[data-theme='dark'] {
+  --color-bg: #0f172a;
+  --color-bg-alt: #1e293b;
+  --color-primary: #60a5fa;
+  --color-primary-dark: #3b82f6;
+  --color-accent: #93c5fd;
+  --color-text: #f8fafc;
+  --color-text-muted: #cbd5e1;
+  --color-text-light: #94a3b8;
+  --color-border: #334155;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  background: #ffffff;
-  color: #1a202c;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   min-height: 100%;
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 ::selection {
-  background: #4a6fa5;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-bg);
 }
 
 /* --- Mobile Optimization Utility Classes --- */
@@ -97,7 +109,7 @@ html, body {
 /* Chat/Search Layouts */
 .chat-container {
   flex: 1;
-  background: #fff;
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
@@ -124,7 +136,7 @@ html, body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-bg);
   backdrop-filter: blur(12px);
   border-top: 1px solid var(--color-border);
   display: flex;

@@ -236,20 +236,34 @@ export default function Hero() {
             <div style={{ flex: 1, height: "1px", background: "var(--color-border)" }}></div>
           </div>
           
-          <form onSubmit={handleCustomSubmit} style={{ display: "flex", gap: "8px" }}>
+          <form 
+            onSubmit={handleCustomSubmit} 
+            style={{ 
+              display: "flex", 
+              alignItems: "center",
+              background: "var(--color-bg-alt)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "30px",
+              padding: "6px 6px 6px 20px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+              transition: "all 0.2s ease",
+              position: "relative"
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-primary)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.03)"; }}
+          >
             <input 
               type="text" 
               value={customInput}
               onChange={(e) => setCustomInput(e.target.value)}
-              placeholder="Type how you feel (e.g. malai life katnai garo chha...)"
+              placeholder="Ask anything (e.g. malai life katnai garo chha...)"
               style={{
                 flex: 1,
-                padding: "12px 16px",
-                borderRadius: "16px",
-                border: "1px solid var(--color-border)",
+                border: "none",
                 fontSize: "0.95rem",
                 outline: "none",
-                background: "var(--color-bg-alt)",
+                background: "transparent",
+                color: "var(--color-text)"
               }}
             />
             <button 
@@ -259,15 +273,24 @@ export default function Hero() {
                 background: "var(--color-primary)",
                 color: "#fff",
                 border: "none",
-                borderRadius: "16px",
-                padding: "0 20px",
-                fontWeight: 600,
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 cursor: (!customInput.trim() || isAiLoading) ? "not-allowed" : "pointer",
-                opacity: (!customInput.trim() || isAiLoading) ? 0.7 : 1,
-                transition: "background 0.2s ease"
+                opacity: (!customInput.trim() || isAiLoading) ? 0.5 : 1,
+                transition: "all 0.2s ease",
+                transform: (!customInput.trim() || isAiLoading) ? "scale(0.95)" : "scale(1)"
               }}
+              title="Search"
             >
-              Ask
+              {isAiLoading ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: "spin 1s linear infinite" }}><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              )}
             </button>
           </form>
         </div>

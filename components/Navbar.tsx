@@ -12,12 +12,33 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [theme, setTheme] = useState("light");
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn, { passive: true });
+    
+    // Check admin status
+    const cookieString = document.cookie;
+    if (cookieString.includes("admin_session=true")) {
+      setIsAdmin(true);
+    }
+    
+    // Check dark mode
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+    localStorage.setItem("theme", next);
+    document.documentElement.setAttribute("data-theme", next);
+  };
 
   return (
     <>
@@ -43,25 +64,49 @@ export default function Navbar() {
             Ganesh<span style={{ color: "var(--color-primary)" }}>.</span>
           </a>
 
-          {/* Links */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {links.filter(l => l.label !== "Home").map(({ label, href }) => (
-              <a key={label} href={href} style={{
-                fontSize: 14,
-                fontWeight: pathname === href ? 600 : 500,
-                color: pathname === href ? "var(--color-text)" : "var(--color-text-muted)",
-                textDecoration: "none",
-                padding: "6px 16px",
-                borderRadius: 8,
-                transition: "all 0.2s ease",
+          {/* Desktop Right Side */}
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <button 
+              onClick={toggleTheme}
+              style={{
+                background: "var(--color-bg-alt)",
+                border: "1px solid var(--color-border)",
+                color: "var(--color-text)",
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
               }}
-                onMouseEnter={e => { e.currentTarget.style.color = "var(--color-text)"; e.currentTarget.style.background = "var(--color-bg-alt)"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = pathname === href ? "var(--color-text)" : "var(--color-text-muted)"; e.currentTarget.style.background = "transparent"; }}
-              >
-                {label}
-              </a>
-            ))}
-
+              title="Toggle Dark Mode"
+            >
+              {theme === 'light' ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+              )}
+            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {links.filter(l => l.label !== "Home").map(({ label, href }) => (
+                <a key={label} href={href} style={{
+                  fontSize: 14,
+                  fontWeight: pathname === href ? 600 : 500,
+                  color: pathname === href ? "var(--color-text)" : "var(--color-text-muted)",
+                  textDecoration: "none",
+                  padding: "6px 16px",
+                  borderRadius: 8,
+                  transition: "all 0.2s ease",
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "var(--color-text)"; e.currentTarget.style.background = "var(--color-bg-alt)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = pathname === href ? "var(--color-text)" : "var(--color-text-muted)"; e.currentTarget.style.background = "transparent"; }}
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </header>
@@ -94,6 +139,20 @@ export default function Navbar() {
             <span>{label}</span>
           </a>
         ))}
+        {isAdmin && (
+          <a href="/onlymeadmin" className={`mobile-nav-link ${pathname === "/onlymeadmin" ? "active" : ""}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            Admin
+          </a>
+        )}
+        <button onClick={toggleTheme} className="mobile-nav-link" style={{ background: "transparent", border: "none" }}>
+          {theme === 'light' ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          )}
+          <span>Theme</span>
+        </button>
       </nav>
     </>
   );
