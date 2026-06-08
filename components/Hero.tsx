@@ -41,6 +41,7 @@ export default function Hero() {
   // Custom AI State
   const [customInput, setCustomInput] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Drag to scroll state
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -96,6 +97,7 @@ export default function Hero() {
     if (selectedEmotion === emotion.id) {
       setSelectedEmotion(null);
       setEmotionArticles([]);
+      setErrorMessage(null);
       return;
     }
     
@@ -103,6 +105,7 @@ export default function Hero() {
     setSelectedEmotion(emotion.id);
     setLoadingEmotion(true);
     setEmotionArticles([]);
+    setErrorMessage(null);
     
     try {
       const res: any = await searchJW(emotion.query, "all", lang); 
@@ -111,6 +114,7 @@ export default function Hero() {
       }
     } catch (err) {
       console.error(err);
+      setErrorMessage("Error fetching articles.");
     } finally {
       setLoadingEmotion(false);
     }
@@ -122,6 +126,7 @@ export default function Hero() {
 
     setSelectedEmotion(null);
     setEmotionArticles([]);
+    setErrorMessage(null);
     setIsAiLoading(true);
 
     try {
@@ -129,6 +134,7 @@ export default function Hero() {
       
       if ("error" in aiRes && aiRes.error) {
         console.error(aiRes.error);
+        setErrorMessage("AI Error: " + aiRes.error);
         return;
       }
 
@@ -137,10 +143,15 @@ export default function Hero() {
         const searchRes: any = await searchJW(aiRes.keywords as string, "all", (aiRes as any).lang || "en");
         if (searchRes && searchRes.texts) {
           setEmotionArticles(searchRes.texts.slice(0, 3));
+        } else {
+          setErrorMessage("No articles found.");
         }
+      } else {
+        setErrorMessage("Error extracting keywords.");
       }
     } catch (err) {
       console.error(err);
+      setErrorMessage("System Error. Please try again.");
     } finally {
       setIsAiLoading(false);
     }
@@ -343,12 +354,16 @@ export default function Hero() {
         </div>
 
         {/* Dynamic Results Area */}
-        {(selectedEmotion || isAiLoading || emotionArticles.length > 0) && (
+        {(selectedEmotion || isAiLoading || emotionArticles.length > 0 || errorMessage) && (
           <div style={{ width: "100%", padding: "0 24px", textAlign: "left", marginTop: "24px" }}>
             {(loadingEmotion || isAiLoading) ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "20px 0", color: "var(--color-primary)", fontWeight: 500, fontSize: "0.9rem" }}>
                 <span className="loading-dots">{isAiLoading ? "Finding the best articles" : "Finding the best articles"}</span>
               </div>
+            ) : errorMessage ? (
+              <p style={{ textAlign: "center", color: "#ff4d4f", fontSize: "0.9rem", padding: "16px", background: "rgba(255, 77, 79, 0.1)", borderRadius: "8px", border: "1px solid rgba(255, 77, 79, 0.3)" }}>
+                {errorMessage}
+              </p>
             ) : (
               <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
@@ -375,11 +390,7 @@ export default function Hero() {
                       </a>
                     ))}
                   </>
-                ) : (
-                  <p style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "0.9rem", padding: "16px" }}>
-                    Could not find specific articles right now.
-                  </p>
-                )}
+                ) : null}
               </div>
             )}
           </div>
