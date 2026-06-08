@@ -9,30 +9,20 @@ export async function processEmotionChat(userInput: string) {
     return { error: "कृपया सिस्टममा DO_AI_KEY वा GROQ_API_KEY राख्नुहोस्" };
   }
 
-  const prompt = `You are an empathetic, highly intelligent JW.org research specialist.
-
+  const prompt = `You are an empathetic JW.org research specialist.
 The user says: "${userInput}"
 
-Your task is to analyze the user's hidden pain, tone, and intent, and then extract the best possible search keywords to find comforting JW.org articles.
+Analyze their emotional pain and intent. Extract the BEST search keywords for Watchtower Online Library.
 
-1. DEEP THINKING & TONE ANALYSIS:
-   - Think deeply about what the user is truly experiencing. If they say "dukha" (sorrow/pain) or "kaam chhaina" (jobless), they need hope, encouragement, or reasons why suffering exists.
-   - Map their raw feelings to JW.org's specific article categories (e.g. "Why does God allow suffering?", "Coping with grief", "Finding hope", "Overcoming anxiety", "Family problems").
+CRITICAL RULES:
+1. Detect the language. If the user writes in Romanized Nepali (e.g., "malai dukha lagyo") or Devanagari, the language MUST be "ne". If English, "en".
+2. KEYWORDS MUST BE IN DEVANAGARI SCRIPT if the language is "ne". Never output romanized nepali keywords. Example: "dukha" -> "दुःख", "santi" -> "शान्ति".
+3. Use spiritual JW terms (e.g., "बाइबलको सान्त्वना", "दुःखकष्ट", "परिवार").
+4. DO NOT repeat the user's exact words. Translate them into 2-3 precise JW.org search terms.
 
-2. LANGUAGE DETECTION:
-   - Precisely detect their language.
-   - If Romanized Nepali (e.g. "malai dukha lagyo", "maru jasto lagchha"), return "ne" (Nepali).
-   - If Devanagari Nepali (e.g. "मलाई दुःख लाग्यो"), return "ne".
-   - English = "en", Hindi = "hi", etc. Return the official 2-letter ISO code.
-
-3. KEYWORD EXTRACTION:
-   - Generate 3-5 highly accurate, targeted search keywords IN THE DETECTED LANGUAGE that will yield the best results on Watchtower Online Library (wol.jw.org).
-   - For Nepali, use exact Devanagari JW terms (e.g., if they are sad, use words like "दुःख", "सान्त्वना", "आशा", "परमेश्वरले किन").
-   - For English, use terms like "suffering", "comfort", "hope", "anxiety", "depression".
-   - Do NOT just repeat the user's words. Translate their feeling into the spiritual/biblical solution keywords related to their problem.
-
-Output ONLY valid JSON:
-{"language": "code", "keywords": "word1 word2 word3 word4"}`;
+Output valid JSON ONLY:
+{"language": "ne", "keywords": "दुःख सान्त्वना आशा"}
+`;
 
   // Determine which API to use
   const useDigitalOcean = !!doToken;
@@ -54,9 +44,9 @@ Output ONLY valid JSON:
         model,
         response_format: useDigitalOcean ? undefined : { type: "json_object" },
         messages: [
-          { role: "user", content: "You are a strict JSON-only responder. Never output anything other than valid JSON.\n\n" + prompt }
+          { role: "user", content: "You strictly output JSON. \n\n" + prompt }
         ],
-        temperature: 0.3
+        temperature: 0.2
       })
     });
 
@@ -84,8 +74,12 @@ Output ONLY valid JSON:
       const jsonMatch = text.match(/\{[\s\S]*?\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        if (parsed.language) lang = parsed.language;
+        if (parsed.language) lang = parsed.language.toLowerCase();
         if (parsed.keywords) keywords = parsed.keywords;
+        
+        // Normalize language codes
+        if (lang.includes("ne") || lang === "np" || lang === "nepali") lang = "ne";
+        if (lang.includes("en") || lang === "english") lang = "en";
       }
     } catch(e) {
       console.error("JSON parse error:", e);
