@@ -175,22 +175,26 @@ export default function Hero() {
         &quot;{quotes[index]}&quot;
       </p>
 
-      {/* Emotion & AI Section */}
+      {/* Emotion Section */}
       <div style={{
         width: "100%",
         maxWidth: "600px",
-        background: "#ffffff",
+        background: "var(--color-bg)",
         border: "1px solid var(--color-border)",
         borderRadius: "24px",
         padding: "24px 0 24px",
-        boxShadow: "0 10px 40px rgba(0,0,0,0.03)",
+        boxShadow: "0 10px 40px rgba(96, 165, 250, 0.15)", // Vibrant colorful glow
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         marginBottom: "32px",
-        overflow: "hidden"
+        overflow: "hidden",
+        position: "relative"
       }}>
-        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", marginBottom: "16px" }}>
+        {/* Subtle top gradient bar to add more color pop */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899)" }}></div>
+
+        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", marginBottom: "16px", marginTop: "8px" }}>
           How are you feeling today?
         </h3>
         
@@ -211,16 +215,17 @@ export default function Hero() {
               style={{
                 scrollSnapAlign: "start",
                 whiteSpace: "nowrap",
-                background: selectedEmotion === emotion.id ? "var(--color-primary)" : "var(--color-bg-alt)",
+                background: selectedEmotion === emotion.id ? "linear-gradient(135deg, #3b82f6, #8b5cf6)" : "var(--color-bg-alt)",
                 color: selectedEmotion === emotion.id ? "#fff" : "var(--color-text)",
-                border: selectedEmotion === emotion.id ? "1px solid var(--color-primary)" : "1px solid var(--color-border)",
+                border: selectedEmotion === emotion.id ? "1px solid transparent" : "1px solid var(--color-border)",
                 padding: "8px 16px",
                 borderRadius: "20px",
                 fontSize: "0.95rem",
-                fontWeight: 500,
+                fontWeight: selectedEmotion === emotion.id ? 600 : 500,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
-                flexShrink: 0
+                flexShrink: 0,
+                boxShadow: selectedEmotion === emotion.id ? "0 4px 12px rgba(139, 92, 246, 0.3)" : "none"
               }}
             >
               {emotion.label}
@@ -270,7 +275,7 @@ export default function Hero() {
               type="submit" 
               disabled={!customInput.trim() || isAiLoading}
               style={{
-                background: "var(--color-primary)",
+                background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
                 color: "#fff",
                 border: "none",
                 borderRadius: "50%",
@@ -282,7 +287,8 @@ export default function Hero() {
                 cursor: (!customInput.trim() || isAiLoading) ? "not-allowed" : "pointer",
                 opacity: (!customInput.trim() || isAiLoading) ? 0.5 : 1,
                 transition: "all 0.2s ease",
-                transform: (!customInput.trim() || isAiLoading) ? "scale(0.95)" : "scale(1)"
+                transform: (!customInput.trim() || isAiLoading) ? "scale(0.95)" : "scale(1)",
+                boxShadow: (!customInput.trim() || isAiLoading) ? "none" : "0 4px 12px rgba(139, 92, 246, 0.4)"
               }}
               title="Search"
             >
