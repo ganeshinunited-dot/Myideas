@@ -7,14 +7,12 @@ export async function processEmotionChat(userInput: string) {
     return { error: "कृपया सिस्टममा GROQ_API_KEY राख्नुहोस् (Please add API key to .env)" };
   }
 
-  const prompt = `You are a strict keyword extractor for a search engine. 
+  const prompt = `You are a strict keyword extractor. 
 The user says: "${userInput}". 
-Analyze their true intent.
-1. Detect their language. If it's Nepali or Romanized Nepali, the code is "ne". If English, "en".
-2. Extract 1 or 2 search keywords IN THAT EXACT LANGUAGE (e.g. if Nepali, output "चिन्ता", "निराशा". If English, "anxiety", "depression").
-DO NOT write any other words or conversational text. Output EXACTLY in this format:
-LANGUAGE_CODE: [en or ne]
-KEYWORDS: [keywords]`;
+1. Detect their language. If it's Nepali or Romanized Nepali, use "ne". If English, use "en".
+2. Extract 1 or 2 search keywords IN THAT EXACT LANGUAGE (e.g. if Nepali, output "चिन्ता", "निराशा").
+Output ONLY a valid JSON object in this exact format:
+{"language": "en_or_ne", "keywords": "extracted_keywords"}`;
 
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -25,6 +23,7 @@ KEYWORDS: [keywords]`;
       },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
+        response_format: { type: "json_object" },
         messages: [{ role: "user", content: prompt }],
         max_tokens: 50
       })
@@ -42,11 +41,13 @@ KEYWORDS: [keywords]`;
     let keywords = "comfort";
     let lang = "en";
 
-    const langMatch = text.match(/LANGUAGE_CODE:\s*(en|ne)/i);
-    const keyMatch = text.match(/KEYWORDS:\s*(.*)/i);
-
-    if (langMatch && langMatch[1]) lang = langMatch[1].toLowerCase();
-    if (keyMatch && keyMatch[1]) keywords = keyMatch[1].trim();
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed.language) lang = parsed.language;
+      if (parsed.keywords) keywords = parsed.keywords;
+    } catch(e) {
+      console.error("JSON parse error:", e);
+    }
 
     return { keywords, lang };
   } catch (error) {
