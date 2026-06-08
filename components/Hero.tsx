@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { searchJW } from "@/app/actions/searchJW";
+import { processEmotionChat } from "@/app/actions/chatAction";
 
 const quotes = [
   "I'm not perfect at anything; I'm just a lifelong learner.",
@@ -94,28 +95,21 @@ export default function Hero() {
     setIsAiLoading(true);
 
     try {
-      const fullPrompt = `You are a deeply empathetic assistant. The user says: "${customInput}". 
-Reply with a warm, comforting paragraph in the exact SAME language the user used (e.g. if they typed in Romanized Nepali like 'garo chha', reply in Romanized Nepali). Keep it under 4 sentences.
-At the very end of your response, on a new line, write EXACTLY: KEYWORDS: [1 or 2 english keywords representing their core issue, e.g. anxiety, stress].`;
-
-      const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}`);
-      const text = await res.text();
+      const aiRes = await processEmotionChat(customInput);
       
-      const keywordMatch = text.match(/KEYWORDS:\s*(.*)/i);
-      let keywords = "comfort";
-      let message = text;
-
-      if (keywordMatch && keywordMatch[1]) {
-        keywords = keywordMatch[1].replace(/[^a-zA-Z\s,]/g, '').trim();
-        message = text.replace(keywordMatch[0], '').trim();
+      if (aiRes.error) {
+        setAiMessage(aiRes.error);
+        return;
       }
 
-      setAiMessage(message);
+      setAiMessage(aiRes.message || "");
 
       // Fetch JW.org articles using the extracted keywords
-      const searchRes: any = await searchJW(keywords, "all", "en");
-      if (searchRes && searchRes.texts) {
-        setEmotionArticles(searchRes.texts.slice(0, 3));
+      if (aiRes.keywords) {
+        const searchRes: any = await searchJW(aiRes.keywords, "all", "en");
+        if (searchRes && searchRes.texts) {
+          setEmotionArticles(searchRes.texts.slice(0, 3));
+        }
       }
     } catch (err) {
       console.error(err);
