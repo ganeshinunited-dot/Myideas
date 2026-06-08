@@ -41,17 +41,18 @@ export default function Hero() {
   }, []);
 
   return (
-    <section style={{
+    <section className="hero-section" style={{
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      padding: "100px 20px",
-      textAlign: "center"
+      padding: "100px 20px 120px",
+      textAlign: "center",
+      position: "relative",
     }}>
       <h1 style={{
-        fontSize: "clamp(3rem, 8vw, 5rem)",
+        fontSize: "clamp(2.5rem, 8vw, 5rem)",
         fontWeight: 800,
         color: "var(--color-primary)",
         letterSpacing: "-0.04em",
@@ -61,20 +62,38 @@ export default function Hero() {
         Hi, I am Ganesh.
       </h1>
       <p style={{
-        fontSize: "clamp(1.1rem, 2vw, 1.25rem)",
+        fontSize: "clamp(1rem, 2vw, 1.25rem)",
         color: "var(--color-text-muted)",
         maxWidth: 600,
         lineHeight: 1.6,
-        marginBottom: 40,
+        marginBottom: 20,
         opacity: fade ? 1 : 0,
         transition: "opacity 0.5s ease-in-out",
-        minHeight: "60px", // Prevents layout shift during quote change
+        minHeight: "60px",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
+        padding: "0 16px",
       }}>
         &quot;{quotes[index]}&quot;
       </p>
+
+      {/* Copyright - placed below quotes so it's not hidden by mobile bottom nav */}
+      <div style={{
+        color: "var(--color-text-light)",
+        fontSize: "13px",
+        marginTop: 8,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 8,
+      }}>
+        <span>&copy; {new Date().getFullYear()} Ganesh Karki</span>
+        <div style={{ display: "flex", gap: 16 }}>
+          <a href="/privacy-policy" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Privacy Policy</a>
+          <a href="/terms-and-conditions" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Terms</a>
+        </div>
+      </div>
     </section>
   );
 }
