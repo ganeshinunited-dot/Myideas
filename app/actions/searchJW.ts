@@ -39,7 +39,8 @@ export async function searchJW(query: string, tab: string = "all", lang: string 
         if (rawLink && rawLink.includes('uddg=')) {
           try {
             const url = new URL('https:' + rawLink);
-            link = decodeURIComponent(url.searchParams.get('uddg'));
+            const uddg = url.searchParams.get('uddg');
+            if (uddg) link = decodeURIComponent(uddg);
           } catch(e) {}
         }
         
