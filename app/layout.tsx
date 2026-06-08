@@ -4,6 +4,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Ganesh Karki — Designer & Developer",
   description: "Product Designer & Full Stack Developer from Nepal",
+  manifest: "/manifest.json",
+  themeColor: "#4a6da7",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +18,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <div style={{ flex: 1 }}>{children}</div>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
