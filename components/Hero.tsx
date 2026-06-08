@@ -110,7 +110,7 @@ export default function Hero() {
     try {
       const res: any = await searchJW(emotion.query, "all", lang); 
       if (res && res.texts) {
-        setEmotionArticles(res.texts.slice(0, 3));
+        setEmotionArticles(res.texts.slice(0, 50));
       }
     } catch (err) {
       console.error(err);
@@ -142,7 +142,7 @@ export default function Hero() {
       if ("keywords" in aiRes && aiRes.keywords) {
         const searchRes: any = await searchJW(aiRes.keywords as string, "all", (aiRes as any).lang || "en");
         if (searchRes && searchRes.texts) {
-          setEmotionArticles(searchRes.texts.slice(0, 3));
+          setEmotionArticles(searchRes.texts.slice(0, 50));
         } else {
           setErrorMessage("No articles found.");
         }
@@ -365,7 +365,7 @@ export default function Hero() {
                 {errorMessage}
               </p>
             ) : (
-              <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div className="animate-fade-in custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "60vh", overflowY: "auto", paddingRight: "8px" }}>
 
                 {emotionArticles.length > 0 ? (
                   <>

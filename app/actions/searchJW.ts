@@ -35,7 +35,7 @@ export async function searchJW(query: string, tab: string = "all", lang: string 
         });
         
         if (googleResponse && googleResponse.results && googleResponse.results.length > 0) {
-          googleResponse.results.slice(0, 6).forEach(res => {
+          googleResponse.results.slice(0, 50).forEach(res => {
             texts.push({
               title: res.title,
               link: res.url,
@@ -48,38 +48,37 @@ export async function searchJW(query: string, tab: string = "all", lang: string 
         console.error("Google text search error:", e);
       }
 
-      // 1.b Fallback to Native WOL Scraper if Google fails or returns nothing
+      // 1.b Fallback to DuckDuckGo Scraper if Google fails or returns nothing (Searches main jw.org)
       if (texts.length === 0) {
         try {
-          const wolQuery = encodeURIComponent(query);
-          const searchUrl = `https://wol.jw.org/${langConfig.urlLang}/wol/s/${langConfig.region}/${langConfig.lp}?q=${wolQuery}`;
+          // Add language keyword to force language results in DDG if needed, though site:jw.org handles it mostly.
+          const ddgQuery = encodeURIComponent(`site:jw.org ${query}`);
+          const searchUrl = `https://html.duckduckgo.com/html/?q=${ddgQuery}`;
           
           const res = await fetch(searchUrl, {
-              headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+              headers: { 
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': `${langConfig.urlLang},en-US;q=0.9,en;q=0.8`
+              }
           });
           const html = await res.text();
           const $ = cheerio.load(html);
 
-          $('ul.directory.resultContentTopic li.caption a.lnk').each((_i, el) => {
-            if (texts.length >= 5) return;
-            const title = $(el).text().trim();
-            const link = 'https://wol.jw.org' + $(el).attr('href');
-            if (title) texts.push({ title, link, description: "Watchtower Library Article", image: null });
+          $('.result').each((_i, el) => {
+            if (texts.length >= 50) return;
+            const title = $(el).find('.result__title a').text().trim();
+            const link = $(el).find('.result__url').attr('href');
+            const description = $(el).find('.result__snippet').text().trim() || "JW.org Content";
+            
+            if (title && link) {
+              // Expand DDG redirect URL if needed, but DDG HTML usually gives direct URLs in .result__url
+              const finalLink = link.startsWith('//') ? 'https:' + link : link;
+              texts.push({ title, link: finalLink, description, image: null });
+            }
           });
-
-          if (texts.length === 0) {
-            $('a.lnk').each((_i, el) => {
-              if (texts.length >= 5) return;
-              const title = $(el).text().trim();
-              let link = $(el).attr('href');
-              if (link && link.startsWith('/')) link = 'https://wol.jw.org' + link;
-              if (title && link && (link.includes('/library/') || link.includes('/wol/d/'))) {
-                texts.push({ title, link, description: "Watchtower Library Article", image: null });
-              }
-            });
-          }
         } catch (e) {
-          console.error("WOL scrape error:", e);
+          console.error("DDG scrape error:", e);
         }
       }
 

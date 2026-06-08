@@ -17,11 +17,13 @@ Analyze their emotional pain and intent. Extract the BEST search keywords for Wa
 CRITICAL RULES:
 1. Detect the language. If the user writes in Romanized Nepali (e.g., "malai dukha lagyo") or Devanagari, the language MUST be "ne". If English, "en".
 2. KEYWORDS MUST BE IN DEVANAGARI SCRIPT if the language is "ne". Never output romanized nepali keywords. Example: "dukha" -> "दुःख", "santi" -> "शान्ति".
-3. Use spiritual JW terms (e.g., "बाइबलको सान्त्वना", "दुःखकष्ट", "परिवार").
-4. DO NOT repeat the user's exact words. Translate them into 2-3 precise JW.org search terms.
+3. Use spiritual JW terms for keywords (e.g., "बाइबलको सान्त्वना", "दुःखकष्ट", "परिवार"). DO NOT repeat the user's exact words. Translate them into 2-3 precise JW.org search terms.
 
 Output valid JSON ONLY:
-{"language": "ne", "keywords": "दुःख सान्त्वना आशा"}
+{
+  "language": "ne",
+  "keywords": "दुःख सान्त्वना आशा"
+}
 `;
 
   // Determine which API to use
@@ -39,7 +41,7 @@ Output valid JSON ONLY:
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
-      signal: AbortSignal.timeout(6000), // Prevent indefinite hanging
+      signal: AbortSignal.timeout(6000), // Fast timeout
       body: JSON.stringify({
         model,
         response_format: useDigitalOcean ? undefined : { type: "json_object" },
@@ -68,6 +70,7 @@ Output valid JSON ONLY:
 
     let keywords = "comfort";
     let lang = "en";
+    let message = "";
 
     try {
       // Extract JSON from response (handle cases where model wraps in markdown)
@@ -76,6 +79,7 @@ Output valid JSON ONLY:
         const parsed = JSON.parse(jsonMatch[0]);
         if (parsed.language) lang = parsed.language.toLowerCase();
         if (parsed.keywords) keywords = parsed.keywords;
+        if (parsed.message) message = parsed.message;
         
         // Normalize language codes
         if (lang.includes("ne") || lang === "np" || lang === "nepali") lang = "ne";
@@ -85,7 +89,7 @@ Output valid JSON ONLY:
       console.error("JSON parse error:", e);
     }
 
-    return { keywords, lang };
+    return { keywords, lang, message };
   } catch (error) {
     console.error("Chat Action Error:", error);
     
@@ -124,14 +128,19 @@ async function processWithGroqFallback(userInput: string, token: string, prompt:
 
     let keywords = "comfort";
     let lang = "en";
+    let message = "";
 
     try {
       const parsed = JSON.parse(text);
-      if (parsed.language) lang = parsed.language;
+      if (parsed.language) lang = parsed.language.toLowerCase();
       if (parsed.keywords) keywords = parsed.keywords;
+      if (parsed.message) message = parsed.message;
+      
+      if (lang.includes("ne") || lang === "np" || lang === "nepali") lang = "ne";
+      if (lang.includes("en") || lang === "english") lang = "en";
     } catch(e) {}
 
-    return { keywords, lang };
+    return { keywords, lang, message };
   } catch {
     return { error: "All AI servers unreachable." };
   }
