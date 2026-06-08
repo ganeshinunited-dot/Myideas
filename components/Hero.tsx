@@ -192,32 +192,7 @@ export default function Hero() {
         </div>
       )}
 
-      <h1 style={{
-        fontSize: "clamp(2.5rem, 8vw, 5rem)",
-        fontWeight: 800,
-        color: "var(--color-primary)",
-        letterSpacing: "-0.04em",
-        lineHeight: 1.1,
-        marginBottom: 20,
-      }}>
-        {t("hero.greeting")}
-      </h1>
-      <p style={{
-        fontSize: "clamp(1rem, 2vw, 1.25rem)",
-        color: "var(--color-text-muted)",
-        maxWidth: 600,
-        lineHeight: 1.6,
-        marginBottom: 32,
-        opacity: fade ? 1 : 0,
-        transition: "opacity 0.5s ease-in-out",
-        minHeight: "60px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "0 16px",
-      }}>
-        &quot;{quotes[index]}&quot;
-      </p>
+
 
       {/* Emotion Section */}
       <div style={{
@@ -242,56 +217,7 @@ export default function Hero() {
           {t("hero.question")}
         </h3>
         
-        {/* Horizontal Scrollable Emotions */}
-        <div 
-          ref={scrollRef}
-          className="hide-scrollbar" 
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseUpOrLeave}
-          onMouseUp={handleMouseUpOrLeave}
-          onMouseMove={handleMouseMove}
-          style={{
-            display: "flex",
-            gap: "12px",
-            width: "100%",
-            overflowX: "auto",
-            padding: "0 24px 16px",
-            WebkitOverflowScrolling: "touch",
-            cursor: isDragging ? "grabbing" : "grab",
-            userSelect: "none"
-        }}>
-          {EMOTIONS.map(emotion => (
-            <button
-              key={emotion.id}
-              onClick={() => handleEmotionClick(emotion)}
-              style={{
-                scrollSnapAlign: "start",
-                whiteSpace: "nowrap",
-                background: selectedEmotion === emotion.id ? "linear-gradient(135deg, var(--color-primary), var(--color-accent))" : "var(--color-bg-alt)",
-                color: selectedEmotion === emotion.id ? "#fff" : "var(--color-text)",
-                border: selectedEmotion === emotion.id ? "1px solid transparent" : "1px solid var(--color-border)",
-                padding: "8px 16px",
-                borderRadius: "20px",
-                fontSize: "0.95rem",
-                fontWeight: selectedEmotion === emotion.id ? 600 : 500,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                flexShrink: 0,
-                boxShadow: selectedEmotion === emotion.id ? "0 4px 12px rgba(74, 109, 167, 0.3)" : "none"
-              }}
-            >
-              {t(emotion.labelKey)}
-            </button>
-          ))}
-        </div>
 
-        {/* AI Custom Input */}
-        <div style={{ width: "100%", padding: "0 24px" }}>
-          <div style={{ display: "flex", alignItems: "center", margin: "8px 0 16px" }}>
-            <div style={{ flex: 1, height: "1px", background: "var(--color-border)" }}></div>
-            <span style={{ padding: "0 12px", fontSize: "0.8rem", color: "var(--color-text-light)", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>OR</span>
-            <div style={{ flex: 1, height: "1px", background: "var(--color-border)" }}></div>
-          </div>
           
           <form 
             onSubmit={handleCustomSubmit} 
@@ -369,7 +295,6 @@ export default function Hero() {
 
                 {emotionArticles.length > 0 ? (
                   <>
-                    <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginBottom: "0px", fontWeight: 600 }}>Suggested reading for you:</p>
                     {emotionArticles.map((article, i) => (
                       <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
                         display: "block",
