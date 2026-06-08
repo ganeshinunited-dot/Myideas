@@ -9,10 +9,10 @@ export async function processEmotionChat(userInput: string) {
 
   const prompt = `You are a strict keyword extractor. 
 The user says: "${userInput}". 
-1. Detect their language. If it's Nepali or Romanized Nepali, use "ne". If English, use "en".
+1. Detect their language. Return the official 2-letter ISO 639-1 language code (e.g., "en" for English, "ne" for Nepali, "hi" for Hindi, "es" for Spanish, "fr" for French, "zh-hans" for Chinese Simplified, etc.).
 2. Extract 1 or 2 search keywords IN THAT EXACT LANGUAGE (e.g. if Nepali, output "चिन्ता", "निराशा").
 Output ONLY a valid JSON object in this exact format:
-{"language": "en_or_ne", "keywords": "extracted_keywords"}`;
+{"language": "iso_code", "keywords": "extracted_keywords"}`;
 
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {

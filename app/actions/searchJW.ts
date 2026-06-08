@@ -9,6 +9,13 @@ const LANGUAGES: Record<string, { urlLang: string; region: string; lp: string; l
   hi: { urlLang: "hi", region: "r108", lp: "lp-hi", label: "Hindi",    nativeLabel: "हिन्दी" },
   es: { urlLang: "es", region: "r4",   lp: "lp-s",  label: "Spanish",  nativeLabel: "Español" },
   fr: { urlLang: "fr", region: "r30",  lp: "lp-f",  label: "French",   nativeLabel: "Français" },
+  pt: { urlLang: "pt", region: "r5",   lp: "lp-t",  label: "Portuguese", nativeLabel: "Português" },
+  de: { urlLang: "de", region: "r10",  lp: "lp-x",  label: "German",   nativeLabel: "Deutsch" },
+  it: { urlLang: "it", region: "r6",   lp: "lp-i",  label: "Italian",  nativeLabel: "Italiano" },
+  ja: { urlLang: "ja", region: "r7",   lp: "lp-j",  label: "Japanese", nativeLabel: "日本語" },
+  ko: { urlLang: "ko", region: "r8",   lp: "lp-ko", label: "Korean",   nativeLabel: "한국어" },
+  ru: { urlLang: "ru", region: "r2",   lp: "lp-u",  label: "Russian",  nativeLabel: "Русский" },
+  zh: { urlLang: "zh-hans", region: "r23", lp: "lp-chs", label: "Chinese", nativeLabel: "中文" },
 };
 
 
@@ -19,65 +26,33 @@ export async function searchJW(query: string, tab: string = "all", lang: string 
     if (tab === "all") {
       const texts: any[] = [];
 
-      if (langConfig.urlLang === "en") {
-        // 1. Fetch text results using DuckDuckGo targeting JW.org library (Works well for English)
-        const ddgQuery = encodeURIComponent(`site:jw.org/${langConfig.urlLang}/library/ ${query}`);
-        const searchUrl = `https://html.duckduckgo.com/html/?q=${ddgQuery}`;
-        
-        const res = await fetch(searchUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64 AppleWebKit/537.36)' }
-        });
-        const html = await res.text();
-        const $ = cheerio.load(html);
+      // Fetch native WOL results directly for ALL languages (Bypasses DDG blocks and ensures curated JW articles)
+      const wolQuery = encodeURIComponent(query);
+      const searchUrl = `https://wol.jw.org/${langConfig.urlLang}/wol/s/${langConfig.region}/${langConfig.lp}?q=${wolQuery}`;
+      
+      const res = await fetch(searchUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+      });
+      const html = await res.text();
+      const $ = cheerio.load(html);
 
-        $('.result').each((_i, el) => {
-          if (texts.length >= 5) return;
-          const title = $(el).find('.result__title a').text().trim();
-          const rawLink = $(el).find('.result__url').attr('href');
-          const snippet = $(el).find('.result__snippet').text().trim();
-          
-          let link = rawLink;
-          if (rawLink && rawLink.includes('uddg=')) {
-            try {
-              const url = new URL('https:' + rawLink);
-              const uddg = url.searchParams.get('uddg');
-              if (uddg) link = decodeURIComponent(uddg);
-            } catch(e) {}
-          }
-          
-          if (title && link) {
-            texts.push({ title, link, description: snippet, image: null });
-          }
-        });
-      } else {
-        // 2. Fetch native WOL results for Nepali or other languages (DuckDuckGo fails indexing these)
-        const wolQuery = encodeURIComponent(query);
-        const searchUrl = `https://wol.jw.org/${langConfig.urlLang}/wol/s/${langConfig.region}/${langConfig.lp}?q=${wolQuery}`;
-        
-        const res = await fetch(searchUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-        });
-        const html = await res.text();
-        const $ = cheerio.load(html);
+      $('ul.directory.resultContentTopic li.caption a.lnk').each((_i, el) => {
+        if (texts.length >= 5) return;
+        const title = $(el).text().trim();
+        const link = 'https://wol.jw.org' + $(el).attr('href');
+        if (title) texts.push({ title, link, description: "JW.org Article", image: null });
+      });
 
-        $('ul.directory.resultContentTopic li.caption a.lnk').each((_i, el) => {
+      if (texts.length === 0) {
+        $('a.lnk').each((_i, el) => {
           if (texts.length >= 5) return;
           const title = $(el).text().trim();
-          const link = 'https://wol.jw.org' + $(el).attr('href');
-          if (title) texts.push({ title, link, description: "JW.org Article", image: null });
+          let link = $(el).attr('href');
+          if (link && link.startsWith('/')) link = 'https://wol.jw.org' + link;
+          if (title && link && (link.includes('/library/') || link.includes('/wol/d/'))) {
+            texts.push({ title, link, description: "JW.org Article", image: null });
+          }
         });
-
-        if (texts.length === 0) {
-          $('a.lnk').each((_i, el) => {
-            if (texts.length >= 5) return;
-            const title = $(el).text().trim();
-            let link = $(el).attr('href');
-            if (link && link.startsWith('/')) link = 'https://wol.jw.org' + link;
-            if (title && link && (link.includes('/library/') || link.includes('/wol/d/'))) {
-              texts.push({ title, link, description: "JW.org Article", image: null });
-            }
-          });
-        }
       }
 
       // 2. Fetch Images from Google
