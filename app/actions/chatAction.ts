@@ -49,14 +49,13 @@ Output ONLY valid JSON:
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
+      signal: AbortSignal.timeout(6000), // Prevent indefinite hanging
       body: JSON.stringify({
         model,
         response_format: useDigitalOcean ? undefined : { type: "json_object" },
         messages: [
-          { role: "system", content: "You are a strict JSON-only responder. Never output anything other than valid JSON." },
-          { role: "user", content: prompt }
+          { role: "user", content: "You are a strict JSON-only responder. Never output anything other than valid JSON.\n\n" + prompt }
         ],
-        max_completion_tokens: 150,
         temperature: 0.3
       })
     });
