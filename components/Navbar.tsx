@@ -23,6 +23,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
   const [theme, setTheme] = useState("light");
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
   const { lang, setLang, t } = useTranslation();
 
   useEffect(() => {
@@ -34,6 +35,12 @@ export default function Navbar() {
     if (cookieString.includes("admin_session=true")) {
       setIsAdmin(true);
     }
+    
+    // Fetch visitor count
+    fetch("/api/visitors")
+      .then(r => r.json())
+      .then(data => setVisitorCount(data.count))
+      .catch(e => console.error(e));
     
     // Check dark mode
     const savedTheme = localStorage.getItem("theme") || "light";
@@ -73,10 +80,28 @@ export default function Navbar() {
         padding: "16px 20px",
       }}>
         <div style={{ maxWidth: 1080, margin: "0 auto", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          {/* Logo */}
-          <a href="/" style={{ fontWeight: 700, fontSize: 18, color: "var(--color-text)", textDecoration: "none", letterSpacing: "-0.02em" }}>
-            Ganesh<span style={{ color: "var(--color-primary)" }}>.</span>
-          </a>
+          {/* Logo & Visitor Counter */}
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <a href="/" style={{ fontWeight: 700, fontSize: 18, color: "var(--color-text)", textDecoration: "none", letterSpacing: "-0.02em" }}>
+              Ganesh<span style={{ color: "var(--color-primary)" }}>.</span>
+            </a>
+            {visitorCount !== null && (
+              <div style={{
+                background: "var(--color-bg-alt)",
+                border: "1px solid var(--color-border)",
+                padding: "4px 8px",
+                borderRadius: "16px",
+                fontSize: "11px",
+                color: "var(--color-text-muted)",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-primary)" }}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <span style={{ fontWeight: 600 }}>{visitorCount.toLocaleString()}</span>
+              </div>
+            )}
+          </div>
 
           {/* Desktop Right Side */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -164,9 +189,27 @@ export default function Navbar() {
         justifyContent: "space-between",
         padding: "12px 16px",
       }}>
-        <a href="/" style={{ fontWeight: 700, fontSize: 18, color: "var(--color-text)", textDecoration: "none" }}>
-          Ganesh<span style={{ color: "var(--color-primary)" }}>.</span>
-        </a>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <a href="/" style={{ fontWeight: 700, fontSize: 18, color: "var(--color-text)", textDecoration: "none" }}>
+            Ganesh<span style={{ color: "var(--color-primary)" }}>.</span>
+          </a>
+          {visitorCount !== null && (
+            <div style={{
+              background: "var(--color-bg-alt)",
+              border: "1px solid var(--color-border)",
+              padding: "2px 6px",
+              borderRadius: "16px",
+              fontSize: "10px",
+              color: "var(--color-text-muted)",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-primary)" }}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span style={{ fontWeight: 600 }}>{visitorCount.toLocaleString()}</span>
+            </div>
+          )}
+        </div>
         
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {/* Mobile Language Switcher */}

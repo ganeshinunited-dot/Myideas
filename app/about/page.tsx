@@ -18,9 +18,17 @@ export default function AboutPage() {
           <p style={{ fontSize: "1.1rem", lineHeight: 1.8, color: "var(--color-text)", marginBottom: 20 }}>
             The JW Search engine built here is designed purely to assist individuals in finding Bible-based articles, images, and videos directly sourced from JW.org. My goal is to make accessing reliable spiritual material as simple and fast as possible.
           </p>
-          <p style={{ fontSize: "1.1rem", lineHeight: 1.8, color: "var(--color-text)" }}>
+          <p style={{ fontSize: "1.1rem", lineHeight: 1.8, color: "var(--color-text)", marginBottom: 24 }}>
             If you have any questions or would like to reach out, please feel free to email me at <strong>ganeshmaankarki0@gmail.com</strong>.
           </p>
+          
+          <hr style={{ border: "none", borderTop: "1px solid var(--color-border)", margin: "24px 0" }} />
+          
+          <div style={{ textAlign: "center" }}>
+            <a href="/privacy-policy" style={{ color: "var(--color-primary)", textDecoration: "none", fontSize: "1rem", fontWeight: 600 }}>
+              Terms & Privacy Policy
+            </a>
+          </div>
         </div>
         
       </div>

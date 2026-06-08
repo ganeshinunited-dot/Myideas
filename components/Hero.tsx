@@ -157,6 +157,8 @@ export default function Hero() {
     }
   };
 
+  const isChatStarted = isAiLoading || emotionArticles.length > 0 || errorMessage;
+
   return (
     <section className="hero-section" style={{
       minHeight: "100vh",
@@ -239,90 +241,84 @@ export default function Hero() {
         )}
       </div>
 
-      {/* Fixed Chat Input Area */}
+        {/* Fixed Chat Input Area */}
       <div className="chat-box-container">
         {/* Subtle top gradient bar */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, var(--color-primary-dark), var(--color-primary), var(--color-accent))", borderTopLeftRadius: "24px", borderTopRightRadius: "24px" }}></div>
 
-        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", marginBottom: "16px", marginTop: "8px" }}>
-          {t("hero.question")}
-        </h3>
+        {!isChatStarted && (
+          <h3 style={{ 
+            fontSize: "1.4rem", 
+            fontWeight: 800, 
+            textAlign: "center", 
+            marginBottom: "20px", 
+            marginTop: "12px", 
+            background: "linear-gradient(135deg, var(--color-primary), #00ffff)", 
+            WebkitBackgroundClip: "text", 
+            WebkitTextFillColor: "transparent" 
+          }}>
+            {t("hero.question")}
+          </h3>
+        )}
         
         <div style={{ width: "100%" }}>
-          <form 
-            onSubmit={handleCustomSubmit} 
-            style={{ 
-              display: "flex", 
-              alignItems: "center",
-              background: "var(--color-bg-alt)",
-              border: "1px solid var(--color-border)",
-              borderRadius: "30px",
-              padding: "6px 6px 6px 20px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
-              transition: "all 0.2s ease",
-              position: "relative"
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-primary)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.03)"; }}
-          >
-            <input 
-              type="text" 
-              value={customInput}
-              onChange={(e) => setCustomInput(e.target.value)}
-              placeholder={t("search.placeholder")}
-              style={{
-                flex: 1,
-                border: "none",
-                fontSize: "0.95rem",
-                outline: "none",
-                background: "transparent",
-                color: "var(--color-text)"
-              }}
-            />
-            <button 
-              type="submit" 
-              disabled={!customInput.trim() || isAiLoading}
-              style={{
-                background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))",
-                color: "#fff",
-                border: "none",
-                borderRadius: "50%",
-                width: "40px",
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: (!customInput.trim() || isAiLoading) ? "not-allowed" : "pointer",
-                opacity: (!customInput.trim() || isAiLoading) ? 0.5 : 1,
-                transition: "all 0.2s ease",
-                transform: (!customInput.trim() || isAiLoading) ? "scale(0.95)" : "scale(1)",
-                boxShadow: (!customInput.trim() || isAiLoading) ? "none" : "0 4px 12px rgba(74, 109, 167, 0.4)"
-              }}
-              title="Search"
+          <div className="animated-border-box">
+            <form 
+              onSubmit={handleCustomSubmit} 
+              className="animated-border-box-inner"
             >
-              {isAiLoading ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: "spin 1s linear infinite" }}><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              )}
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* Copyright */}
-      <div style={{
-        color: "var(--color-text-light)",
-        fontSize: "13px",
-        marginTop: 8,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 8,
-      }}>
-        <span>&copy; {new Date().getFullYear()} Ganesh Karki</span>
-        <div style={{ display: "flex", gap: 16 }}>
-          <a href="/privacy-policy" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Terms & Privacy Policy</a>
+              <input 
+                type="text" 
+                value={customInput}
+                onChange={(e) => setCustomInput(e.target.value)}
+                placeholder={t("search.placeholder")}
+                style={{
+                  flex: 1,
+                  border: "none",
+                  fontSize: "0.95rem",
+                  outline: "none",
+                  background: "transparent",
+                  color: "var(--color-text)"
+                }}
+              />
+              <button 
+                type="submit" 
+                disabled={!customInput.trim() || isAiLoading}
+                style={{
+                  background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: (!customInput.trim() || isAiLoading) ? "not-allowed" : "pointer",
+                  opacity: (!customInput.trim() || isAiLoading) ? 0.5 : 1,
+                  transition: "all 0.2s ease",
+                  transform: (!customInput.trim() || isAiLoading) ? "scale(0.95)" : "scale(1)",
+                  boxShadow: (!customInput.trim() || isAiLoading) ? "none" : "0 4px 12px rgba(74, 109, 167, 0.4)"
+                }}
+                title="Search"
+              >
+                {isAiLoading ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: "spin 1s linear infinite" }}><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                )}
+              </button>
+            </form>
+          </div>
+          
+          <div style={{
+            color: "var(--color-text-light)",
+            fontSize: "12px",
+            marginTop: 12,
+            textAlign: "center"
+          }}>
+            &copy; {new Date().getFullYear()} Ganesh Karki
+          </div>
         </div>
       </div>
     </section>
