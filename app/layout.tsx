@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { I18nProvider } from "@/components/I18nProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&display=swap" rel="stylesheet" />
       </head>
       <body style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <div style={{ flex: 1 }}>{children}</div>
+        <I18nProvider>
+          <div style={{ flex: 1 }}>{children}</div>
+        </I18nProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

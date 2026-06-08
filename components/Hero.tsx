@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { searchJW } from "@/app/actions/searchJW";
 import { processEmotionChat } from "@/app/actions/chatAction";
+import { useTranslation } from "./I18nProvider";
 
 const quotes = [
   "I'm not perfect at anything; I'm just a lifelong learner.",
@@ -17,16 +18,17 @@ const quotes = [
 ];
 
 const EMOTIONS = [
-  { id: "anxiety", label: "Overcoming Anxiety", query: "anxiety worry stress" },
-  { id: "peace", label: "Inner Peace", query: "peace of mind calmness" },
-  { id: "grief", label: "Coping with Grief", query: "grief loss death" },
-  { id: "purpose", label: "Finding Purpose", query: "meaning of life purpose" },
-  { id: "resilience", label: "Building Resilience", query: "endurance strength courage" },
-  { id: "family", label: "Family & Marriage", query: "family marriage parenting" },
-  { id: "hope", label: "Seeking Hope", query: "hope future promises" },
+  { id: "anxiety", labelKey: "emotion.anxiety", query: "anxiety worry stress" },
+  { id: "peace", labelKey: "emotion.peace", query: "peace of mind calmness" },
+  { id: "grief", labelKey: "emotion.grief", query: "grief loss death" },
+  { id: "purpose", labelKey: "emotion.purpose", query: "meaning of life purpose" },
+  { id: "resilience", labelKey: "emotion.resilience", query: "endurance strength courage" },
+  { id: "family", labelKey: "emotion.family", query: "family marriage parenting" },
+  { id: "hope", labelKey: "emotion.hope", query: "hope future promises" },
 ];
 
 export default function Hero() {
+  const { t, lang } = useTranslation();
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
@@ -103,7 +105,7 @@ export default function Hero() {
     setEmotionArticles([]);
     
     try {
-      const res: any = await searchJW(emotion.query, "all", "en"); 
+      const res: any = await searchJW(emotion.query, "all", lang); 
       if (res && res.texts) {
         setEmotionArticles(res.texts.slice(0, 3));
       }
@@ -175,7 +177,7 @@ export default function Hero() {
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
-          <span style={{ fontWeight: 600 }}>{visitorCount.toLocaleString()}</span> visitors
+          <span style={{ fontWeight: 600 }}>{visitorCount.toLocaleString()}</span> {t("hero.visitors")}
         </div>
       )}
 
@@ -187,7 +189,7 @@ export default function Hero() {
         lineHeight: 1.1,
         marginBottom: 20,
       }}>
-        Hi, I am Ganesh.
+        {t("hero.greeting")}
       </h1>
       <p style={{
         fontSize: "clamp(1rem, 2vw, 1.25rem)",
@@ -226,7 +228,7 @@ export default function Hero() {
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, var(--color-primary-dark), var(--color-primary), var(--color-accent))" }}></div>
 
         <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", marginBottom: "16px", marginTop: "8px" }}>
-          How are you feeling today?
+          {t("hero.question")}
         </h3>
         
         {/* Horizontal Scrollable Emotions */}
@@ -267,7 +269,7 @@ export default function Hero() {
                 boxShadow: selectedEmotion === emotion.id ? "0 4px 12px rgba(74, 109, 167, 0.3)" : "none"
               }}
             >
-              {emotion.label}
+              {t(emotion.labelKey)}
             </button>
           ))}
         </div>
@@ -300,7 +302,7 @@ export default function Hero() {
               type="text" 
               value={customInput}
               onChange={(e) => setCustomInput(e.target.value)}
-              placeholder="Ask anything (e.g. malai life katnai garo chha...)"
+              placeholder={t("search.placeholder")}
               style={{
                 flex: 1,
                 border: "none",

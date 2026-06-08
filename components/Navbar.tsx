@@ -1,12 +1,21 @@
 "use client";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslation } from "./I18nProvider";
 
-const links = [
-  { label: "Home", href: "/", icon: <HomeIcon /> },
-  { label: "About", href: "/about", icon: <InfoIcon /> },
-  { label: "Search JW", href: "/search-jw", icon: <SearchIcon /> },
-  { label: "Blog", href: "/blog", icon: <BookOpenIcon /> },
+// Translation key mapping for link labels
+const linkKeys: Record<string, string> = {
+  "Home": "nav.home",
+  "About": "nav.about",
+  "Search JW": "nav.search",
+  "Blog": "nav.blog",
+};
+
+const linkDefs = [
+  { id: "Home", href: "/", icon: <HomeIcon /> },
+  { id: "About", href: "/about", icon: <InfoIcon /> },
+  { id: "Search JW", href: "/search-jw", icon: <SearchIcon /> },
+  { id: "Blog", href: "/blog", icon: <BookOpenIcon /> },
 ];
 
 export default function Navbar() {
@@ -14,6 +23,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
   const [theme, setTheme] = useState("light");
+  const { lang, setLang, t } = useTranslation();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -38,6 +48,10 @@ export default function Navbar() {
     setTheme(next);
     localStorage.setItem("theme", next);
     document.documentElement.setAttribute("data-theme", next);
+  };
+
+  const toggleLang = () => {
+    setLang(lang === "en" ? "ne" : "en");
   };
 
   return (
@@ -65,7 +79,31 @@ export default function Navbar() {
           </a>
 
           {/* Desktop Right Side */}
-          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {/* Language Switcher */}
+            <button
+              onClick={toggleLang}
+              style={{
+                background: "var(--color-bg-alt)",
+                border: "1px solid var(--color-border)",
+                color: "var(--color-text)",
+                height: "36px",
+                padding: "0 14px",
+                borderRadius: "18px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: 600,
+                transition: "all 0.2s ease",
+              }}
+              title="Switch Language"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              {lang === "en" ? "नेपाली" : "English"}
+            </button>
+            {/* Theme Toggle */}
             <button 
               onClick={toggleTheme}
               style={{
@@ -90,8 +128,8 @@ export default function Navbar() {
               )}
             </button>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {links.filter(l => l.label !== "Home").map(({ label, href }) => (
-                <a key={label} href={href} style={{
+              {linkDefs.filter(l => l.id !== "Home").map(({ id, href }) => (
+                <a key={id} href={href} style={{
                   fontSize: 14,
                   fontWeight: pathname === href ? 600 : 500,
                   color: pathname === href ? "var(--color-text)" : "var(--color-text-muted)",
@@ -103,7 +141,7 @@ export default function Navbar() {
                   onMouseEnter={e => { e.currentTarget.style.color = "var(--color-text)"; e.currentTarget.style.background = "var(--color-bg-alt)"; }}
                   onMouseLeave={e => { e.currentTarget.style.color = pathname === href ? "var(--color-text)" : "var(--color-text-muted)"; e.currentTarget.style.background = "transparent"; }}
                 >
-                  {label}
+                  {t(linkKeys[id])}
                 </a>
               ))}
             </div>
@@ -130,43 +168,69 @@ export default function Navbar() {
           Ganesh<span style={{ color: "var(--color-primary)" }}>.</span>
         </a>
         
-        <button 
-          onClick={toggleTheme}
-          style={{
-            background: "var(--color-bg-alt)",
-            border: "1px solid var(--color-border)",
-            color: "var(--color-text)",
-            width: "32px",
-            height: "32px",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            transition: "all 0.2s ease"
-          }}
-          title="Toggle Dark Mode"
-        >
-          {theme === 'light' ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-          )}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Mobile Language Switcher */}
+          <button
+            onClick={toggleLang}
+            style={{
+              background: "var(--color-bg-alt)",
+              border: "1px solid var(--color-border)",
+              color: "var(--color-text)",
+              height: "32px",
+              padding: "0 10px",
+              borderRadius: "16px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              cursor: "pointer",
+              fontSize: "11px",
+              fontWeight: 600,
+              transition: "all 0.2s ease",
+            }}
+            title="Switch Language"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            {lang === "en" ? "ने" : "EN"}
+          </button>
+          {/* Mobile Theme Toggle */}
+          <button 
+            onClick={toggleTheme}
+            style={{
+              background: "var(--color-bg-alt)",
+              border: "1px solid var(--color-border)",
+              color: "var(--color-text)",
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+            title="Toggle Dark Mode"
+          >
+            {theme === 'light' ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-only mobile-bottom-nav" style={{ display: "none" /* handled by CSS class */ }}>
-        {links.map(({ label, href, icon }) => (
-          <a key={label} href={href} className={`mobile-nav-link ${pathname === href ? "active" : ""}`}>
+        {linkDefs.map(({ id, href, icon }) => (
+          <a key={id} href={href} className={`mobile-nav-link ${pathname === href ? "active" : ""}`}>
             {icon}
-            <span>{label}</span>
+            <span>{t(linkKeys[id])}</span>
           </a>
         ))}
         {isAdmin && (
           <a href="/onlymeadmin" className={`mobile-nav-link ${pathname === "/onlymeadmin" ? "active" : ""}`}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-            Admin
+            {t("nav.admin")}
           </a>
         )}
       </nav>
