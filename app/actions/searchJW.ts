@@ -11,13 +11,6 @@ const LANGUAGES: Record<string, { urlLang: string; region: string; lp: string; l
   fr: { urlLang: "fr", region: "r30",  lp: "lp-f",  label: "French",   nativeLabel: "Français" },
 };
 
-export function getSupportedLanguages() {
-  return Object.entries(LANGUAGES).map(([code, info]) => ({
-    code,
-    label: info.label,
-    nativeLabel: info.nativeLabel,
-  }));
-}
 
 export async function searchJW(query: string, tab: string = "all", lang: string = "en") {
   const langConfig = LANGUAGES[lang] || LANGUAGES.en;
