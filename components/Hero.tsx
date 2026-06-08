@@ -128,6 +128,7 @@ export default function Hero() {
 
     setSelectedEmotion(null);
     setLastQuery(customInput);
+    setCustomInput("");
     setEmotionArticles([]);
     setErrorMessage(null);
     setIsAiLoading(true);
