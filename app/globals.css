@@ -155,9 +155,9 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   text-decoration: none;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 500;
   color: var(--color-text-muted);
   transition: color 0.2s;
@@ -168,15 +168,40 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .mobile-nav-link svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
+}
+
+.chat-box-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 600px;
+  z-index: 90;
+  background: color-mix(in srgb, var(--color-bg) 95%, transparent);
+  backdrop-filter: blur(12px);
+  padding: 16px 24px 24px;
+  border-radius: 24px;
+  box-shadow: 0 -4px 40px rgba(74, 109, 167, 0.15);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (max-width: 767px) {
+  .chat-box-container {
+    bottom: 80px; /* Above the mobile nav bar */
+  }
 }
 
 /* Hero section mobile fix - fit exactly in viewport */
 @media (max-width: 767px) {
   .hero-section {
     min-height: 100dvh !important;
-    padding: 70px 16px 90px !important;
+    padding: 70px 16px 240px !important;
   }
 }
 

@@ -163,8 +163,8 @@ export default function Hero() {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      justifyContent: "center",
-      padding: "100px 20px 80px",
+      justifyContent: "flex-start",
+      padding: "100px 20px 180px",
       textAlign: "center",
       position: "relative",
     }}>
@@ -194,30 +194,61 @@ export default function Hero() {
 
 
 
-      {/* Emotion Section */}
-      <div style={{
-        width: "100%",
-        maxWidth: "600px",
-        background: "var(--color-bg)",
-        border: "1px solid var(--color-border)",
-        borderRadius: "24px",
-        padding: "24px 0 24px",
-        boxShadow: "0 10px 40px rgba(74, 109, 167, 0.15)", // JW Blue glow
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        marginBottom: "32px",
-        overflow: "hidden",
-        position: "relative"
-      }}>
-        {/* Subtle top gradient bar to add more color pop */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, var(--color-primary-dark), var(--color-primary), var(--color-accent))" }}></div>
+      {/* Dynamic Results Area */}
+      <div style={{ width: "100%", maxWidth: "600px", zIndex: 10 }}>
+        {(selectedEmotion || isAiLoading || emotionArticles.length > 0 || errorMessage) && (
+          <div style={{ width: "100%", textAlign: "left", marginBottom: "40px" }}>
+            {(loadingEmotion || isAiLoading) ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", color: "var(--color-primary)", fontWeight: 500, fontSize: "1.1rem" }}>
+                <span className="loading-dots">{isAiLoading ? "Finding the best articles" : "Finding the best articles"}</span>
+              </div>
+            ) : errorMessage ? (
+              <p style={{ textAlign: "center", color: "#ff4d4f", fontSize: "0.9rem", padding: "16px", background: "rgba(255, 77, 79, 0.1)", borderRadius: "8px", border: "1px solid rgba(255, 77, 79, 0.3)" }}>
+                {errorMessage}
+              </p>
+            ) : (
+              <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+                {emotionArticles.length > 0 ? (
+                  <>
+                    {emotionArticles.map((article, i) => (
+                      <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
+                        display: "block",
+                        padding: "16px",
+                        background: "var(--color-bg)",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: "12px",
+                        textDecoration: "none",
+                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.02)"
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.06)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.02)"; }}
+                      >
+                        <h4 style={{ color: "var(--color-primary-dark)", margin: "0 0 6px 0", fontSize: "1.05rem", lineHeight: 1.3 }}>{article.title}</h4>
+                        <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.9rem", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                          {article.description}
+                        </p>
+                      </a>
+                    ))}
+                  </>
+                ) : null}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Fixed Chat Input Area */}
+      <div className="chat-box-container">
+        {/* Subtle top gradient bar */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, var(--color-primary-dark), var(--color-primary), var(--color-accent))", borderTopLeftRadius: "24px", borderTopRightRadius: "24px" }}></div>
 
         <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", marginBottom: "16px", marginTop: "8px" }}>
           {t("hero.question")}
         </h3>
         
-        <div style={{ width: "100%", padding: "0 24px" }}>
+        <div style={{ width: "100%" }}>
           <form 
             onSubmit={handleCustomSubmit} 
             style={{ 
@@ -277,48 +308,6 @@ export default function Hero() {
             </button>
           </form>
         </div>
-
-        {/* Dynamic Results Area */}
-        {(selectedEmotion || isAiLoading || emotionArticles.length > 0 || errorMessage) && (
-          <div style={{ width: "100%", padding: "0 24px", textAlign: "left", marginTop: "24px" }}>
-            {(loadingEmotion || isAiLoading) ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "20px 0", color: "var(--color-primary)", fontWeight: 500, fontSize: "0.9rem" }}>
-                <span className="loading-dots">{isAiLoading ? "Finding the best articles" : "Finding the best articles"}</span>
-              </div>
-            ) : errorMessage ? (
-              <p style={{ textAlign: "center", color: "#ff4d4f", fontSize: "0.9rem", padding: "16px", background: "rgba(255, 77, 79, 0.1)", borderRadius: "8px", border: "1px solid rgba(255, 77, 79, 0.3)" }}>
-                {errorMessage}
-              </p>
-            ) : (
-              <div className="animate-fade-in custom-scrollbar" style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "60vh", overflowY: "auto", paddingRight: "8px" }}>
-
-                {emotionArticles.length > 0 ? (
-                  <>
-                    {emotionArticles.map((article, i) => (
-                      <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
-                        display: "block",
-                        padding: "16px",
-                        background: "var(--color-bg-alt)",
-                        border: "1px solid var(--color-border)",
-                        borderRadius: "12px",
-                        textDecoration: "none",
-                        transition: "transform 0.2s ease, box-shadow 0.2s ease"
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
-                      >
-                        <h4 style={{ color: "var(--color-primary-dark)", margin: "0 0 6px 0", fontSize: "0.95rem", lineHeight: 1.3 }}>{article.title}</h4>
-                        <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.85rem", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                          {article.description}
-                        </p>
-                      </a>
-                    ))}
-                  </>
-                ) : null}
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Copyright */}
