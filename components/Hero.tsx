@@ -179,40 +179,16 @@ export default function Hero() {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", marginBottom: 20 }}>
-        <h1 style={{
-          fontSize: "clamp(2.5rem, 8vw, 5rem)",
-          fontWeight: 800,
-          color: "var(--color-primary)",
-          letterSpacing: "-0.04em",
-          lineHeight: 1.1,
-          margin: 0,
-        }}>
-          Hi, I am Ganesh.
-        </h1>
-        {/* Verified Badge */}
-        <div title="Verified Profile" style={{ 
-          display: "flex", 
-          alignItems: "center", 
-          justifyContent: "center",
-          animation: "fade-in 1s ease-out forwards"
-        }}>
-          <svg viewBox="0 0 24 24" style={{ 
-            width: "clamp(2rem, 6vw, 4rem)", 
-            height: "clamp(2rem, 6vw, 4rem)", 
-            filter: "drop-shadow(0 4px 6px rgba(34, 197, 94, 0.3))"
-          }}>
-            {/* 3D Drop shadow layer for the star */}
-            <path d="M11.99 2.5L14.25 4.84L17.5 4.52L18.47 7.65L21.49 9.28L20.5 12.5L21.49 15.72L18.47 17.35L17.5 20.48L14.25 20.16L11.99 22.5L9.73 20.16L6.48 20.48L5.51 17.35L2.49 15.72L3.48 12.5L2.49 9.28L5.51 7.65L6.48 4.52L9.73 4.84L11.99 2.5Z" fill="#16a34a" />
-            {/* Main star background */}
-            <path d="M11.99 1.5L14.25 3.84L17.5 3.52L18.47 6.65L21.49 8.28L20.5 11.5L21.49 14.72L18.47 16.35L17.5 19.48L14.25 19.16L11.99 21.5L9.73 19.16L6.48 19.48L5.51 16.35L2.49 14.72L3.48 11.5L2.49 8.28L5.51 6.65L6.48 3.52L9.73 3.84L11.99 1.5Z" fill="#22c55e" />
-            {/* 3D Checkmark Shadow */}
-            <path d="M10.5 15.5L6.5 11.5L7.91 10.09L10.5 12.67L16.09 7.09L17.5 8.5L10.5 15.5Z" fill="#15803d" transform="translate(0, 0.5)" />
-            {/* Main White Checkmark */}
-            <path d="M10.5 15L6.5 11L7.91 9.59L10.5 12.17L16.09 6.59L17.5 8L10.5 15Z" fill="#ffffff" />
-          </svg>
-        </div>
-      </div>
+      <h1 style={{
+        fontSize: "clamp(2.5rem, 8vw, 5rem)",
+        fontWeight: 800,
+        color: "var(--color-primary)",
+        letterSpacing: "-0.04em",
+        lineHeight: 1.1,
+        marginBottom: 20,
+      }}>
+        Hi, I am Ganesh.
+      </h1>
       <p style={{
         fontSize: "clamp(1rem, 2vw, 1.25rem)",
         color: "var(--color-text-muted)",
