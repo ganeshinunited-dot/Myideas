@@ -9,26 +9,30 @@ export async function processEmotionChat(userInput: string) {
     return { error: "कृपया सिस्टममा DO_AI_KEY वा GROQ_API_KEY राख्नुहोस्" };
   }
 
-  const prompt = `You are a JW.org research specialist and multilingual keyword extractor.
+  const prompt = `You are an empathetic, highly intelligent JW.org research specialist.
 
 The user says: "${userInput}"
 
-Your task:
-1. LANGUAGE DETECTION: Detect the user's language precisely.
-   - If they write in Romanized Nepali (e.g. "malai chinta lagyo", "dukhi chhu"), return "ne".
-   - If they write in Devanagari Nepali (e.g. "मलाई चिन्ता लाग्यो"), return "ne".
-   - If they write in English, return "en".
-   - If they write in Hindi, return "hi".
-   - For any other language, return the correct ISO 639-1 code.
+Your task is to analyze the user's hidden pain, tone, and intent, and then extract the best possible search keywords to find comforting JW.org articles.
 
-2. KEYWORD EXTRACTION: Extract 2-4 highly relevant search keywords that would find the BEST articles on jw.org's Watchtower Online Library (wol.jw.org).
-   - Keywords MUST be in the DETECTED language (e.g. if Nepali, use Nepali Devanagari words like "चिन्ता", "निराशा").
-   - Think deeply about what the user is feeling or asking about.
-   - Choose keywords that would match JW.org article titles and topics.
-   - If the user mentions emotions, map them to biblical/spiritual topics (e.g. "lonely" → "loneliness comfort", "scared" → "fear courage faith").
+1. DEEP THINKING & TONE ANALYSIS:
+   - Think deeply about what the user is truly experiencing. If they say "dukha" (sorrow/pain) or "kaam chhaina" (jobless), they need hope, encouragement, or reasons why suffering exists.
+   - Map their raw feelings to JW.org's specific article categories (e.g. "Why does God allow suffering?", "Coping with grief", "Finding hope", "Overcoming anxiety", "Family problems").
+
+2. LANGUAGE DETECTION:
+   - Precisely detect their language.
+   - If Romanized Nepali (e.g. "malai dukha lagyo", "maru jasto lagchha"), return "ne" (Nepali).
+   - If Devanagari Nepali (e.g. "मलाई दुःख लाग्यो"), return "ne".
+   - English = "en", Hindi = "hi", etc. Return the official 2-letter ISO code.
+
+3. KEYWORD EXTRACTION:
+   - Generate 3-5 highly accurate, targeted search keywords IN THE DETECTED LANGUAGE that will yield the best results on Watchtower Online Library (wol.jw.org).
+   - For Nepali, use exact Devanagari JW terms (e.g., if they are sad, use words like "दुःख", "सान्त्वना", "आशा", "परमेश्वरले किन").
+   - For English, use terms like "suffering", "comfort", "hope", "anxiety", "depression".
+   - Do NOT just repeat the user's words. Translate their feeling into the spiritual/biblical solution keywords related to their problem.
 
 Output ONLY valid JSON:
-{"language": "code", "keywords": "keyword1 keyword2 keyword3"}`;
+{"language": "code", "keywords": "word1 word2 word3 word4"}`;
 
   // Determine which API to use
   const useDigitalOcean = !!doToken;
@@ -52,7 +56,7 @@ Output ONLY valid JSON:
           { role: "system", content: "You are a strict JSON-only responder. Never output anything other than valid JSON." },
           { role: "user", content: prompt }
         ],
-        max_completion_tokens: 100,
+        max_completion_tokens: 150,
         temperature: 0.3
       })
     });
@@ -115,7 +119,7 @@ async function processWithGroqFallback(userInput: string, token: string, prompt:
         model: "llama-3.3-70b-versatile",
         response_format: { type: "json_object" },
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 100,
+        max_tokens: 150,
         temperature: 0.3
       })
     });
