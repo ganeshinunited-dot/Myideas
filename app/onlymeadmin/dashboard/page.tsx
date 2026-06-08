@@ -106,8 +106,9 @@ export default function AdminDashboard() {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text)" }}>Cover Image URL (Optional)</label>
-                <input name="imageUrl" placeholder="https://example.com/image.jpg" style={{ padding: "12px", borderRadius: "8px", border: "1px solid var(--color-border)", fontSize: "0.9rem", outline: "none" }} />
+                <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text)" }}>Cover Image</label>
+                <input type="file" name="imageFile" accept="image/*" style={{ padding: "8px", borderRadius: "8px", border: "1px solid var(--color-border)", fontSize: "0.9rem", outline: "none", background: "var(--color-bg-alt)" }} />
+                <p style={{ fontSize: "0.75rem", color: "var(--color-text-light)", margin: 0 }}>Upload an image (or leave blank). It will be saved on the server.</p>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

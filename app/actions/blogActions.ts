@@ -48,10 +48,29 @@ export async function createBlog(formData: FormData) {
 
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
-  const imageUrl = formData.get("imageUrl") as string;
+  let imageUrl = formData.get("imageUrl") as string;
+  const imageFile = formData.get("imageFile") as File | null;
 
   if (!title || !content) {
     return { error: "Title and content are required" };
+  }
+
+  // Handle Image Upload
+  if (imageFile && imageFile.size > 0) {
+    try {
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+      const filename = `${Date.now()}-${imageFile.name.replace(/\s+/g, '-')}`;
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      fs.writeFileSync(path.join(uploadDir, filename), buffer);
+      imageUrl = `/uploads/${filename}`;
+    } catch (err) {
+      console.error("Failed to upload image", err);
+    }
   }
 
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');

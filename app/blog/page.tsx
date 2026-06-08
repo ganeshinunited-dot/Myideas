@@ -3,7 +3,7 @@ import { getBlogs } from "@/app/actions/blogActions";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = "force-dynamic";
 
 export default async function BlogListPage() {
   const blogs = await getBlogs();
