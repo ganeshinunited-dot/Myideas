@@ -3,9 +3,9 @@
 :root {
   --color-bg: #ffffff;
   --color-bg-alt: #f4f6f9;
-  --color-primary: #4a6fa5;
-  --color-primary-dark: #3b5998;
-  --color-accent: #2b6cb0;
+  --color-primary: #4a6da7; /* Official JW.org Blue */
+  --color-primary-dark: #2f4f81;
+  --color-accent: #7393c8;
   --color-text: #1a202c;
   --color-text-muted: #5a6a7a;
   --color-text-light: #8896a6;
@@ -15,9 +15,9 @@
 [data-theme='dark'] {
   --color-bg: #0f172a;
   --color-bg-alt: #1e293b;
-  --color-primary: #60a5fa;
-  --color-primary-dark: #3b82f6;
-  --color-accent: #93c5fd;
+  --color-primary: #4a6da7; /* Keep JW Blue signature */
+  --color-primary-dark: #5a80c2; /* Lighter variant for dark mode visibility */
+  --color-accent: #7a9fd8;
   --color-text: #f8fafc;
   --color-text-muted: #cbd5e1;
   --color-text-light: #94a3b8;

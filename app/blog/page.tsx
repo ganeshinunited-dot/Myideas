@@ -23,7 +23,7 @@ export default async function BlogListPage() {
         </div>
 
         {blogs.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 20px", background: "#fff", borderRadius: "24px", border: "1px solid var(--color-border)" }}>
+          <div style={{ textAlign: "center", padding: "60px 20px", background: "var(--color-bg)", borderRadius: "24px", border: "1px solid var(--color-border)" }}>
             <p style={{ color: "var(--color-text-light)", fontSize: "1.1rem" }}>No posts available right now. Check back soon!</p>
           </div>
         ) : (
@@ -31,7 +31,7 @@ export default async function BlogListPage() {
             {blogs.map(blog => (
               <Link key={blog.id} href={`/blog/${blog.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
                 <article style={{
-                  background: "#fff",
+                  background: "var(--color-bg)",
                   borderRadius: "20px",
                   overflow: "hidden",
                   border: "1px solid var(--color-border)",

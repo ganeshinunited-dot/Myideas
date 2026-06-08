@@ -7,7 +7,7 @@ export default function TermsAndPrivacyPage() {
       
       <div style={{ flex: 1, padding: "120px 20px 80px", maxWidth: 760, margin: "0 auto", width: "100%" }}>
         <article style={{
-          background: "#ffffff",
+          background: "var(--color-bg)",
           padding: "clamp(30px, 8vw, 60px)",
           borderRadius: "24px",
           boxShadow: "0 10px 40px rgba(0,0,0,0.04)",

@@ -47,9 +47,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc", paddingBottom: "80px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg-alt)", paddingBottom: "80px" }}>
       {/* Header */}
-      <header style={{ background: "#fff", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--color-border)", position: "sticky", top: 0, zIndex: 10 }}>
+      <header style={{ background: "var(--color-bg)", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--color-border)", position: "sticky", top: 0, zIndex: 10 }}>
         <h1 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-primary)", margin: 0 }}>Dashboard</h1>
         <button onClick={() => logoutAdmin()} style={{ display: "flex", alignItems: "center", gap: 6, background: "transparent", border: "none", color: "var(--color-text-muted)", fontSize: "0.9rem", cursor: "pointer" }}>
           <LogOut size={16} /> Logout
@@ -73,13 +73,13 @@ export default function AdminDashboard() {
             {loading ? (
               <p style={{ color: "var(--color-text-muted)" }}>Loading posts...</p>
             ) : blogs.length === 0 ? (
-              <div style={{ background: "#fff", padding: "40px", borderRadius: "12px", textAlign: "center", color: "var(--color-text-muted)", border: "1px dashed var(--color-border)" }}>
+              <div style={{ background: "var(--color-bg)", padding: "40px", borderRadius: "12px", textAlign: "center", color: "var(--color-text-muted)", border: "1px dashed var(--color-border)" }}>
                 No posts yet. Write your first blog!
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {blogs.map(blog => (
-                  <div key={blog.id} style={{ background: "#fff", padding: "16px", borderRadius: "12px", border: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={blog.id} style={{ background: "var(--color-bg)", padding: "16px", borderRadius: "12px", border: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
                       <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-text)", marginBottom: 4 }}>{blog.title}</h3>
                       <p style={{ fontSize: "0.8rem", color: "var(--color-text-light)" }}>{new Date(blog.createdAt).toLocaleDateString()}</p>
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
             )}
           </>
         ) : (
-          <div style={{ background: "#fff", padding: "20px", borderRadius: "12px", border: "1px solid var(--color-border)" }}>
+          <div style={{ background: "var(--color-bg)", padding: "20px", borderRadius: "12px", border: "1px solid var(--color-border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <h2 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-text)" }}>Write New Post</h2>
               <button onClick={() => setIsWriting(false)} style={{ background: "transparent", border: "none", color: "var(--color-text-muted)", fontSize: "0.9rem", cursor: "pointer" }}>Cancel</button>

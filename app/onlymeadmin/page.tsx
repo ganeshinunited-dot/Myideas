@@ -25,9 +25,9 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", padding: 20 }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-bg-alt)", padding: 20 }}>
       <form onSubmit={handleLogin} style={{
-        background: "#fff",
+        background: "var(--color-bg)",
         padding: "40px",
         borderRadius: "16px",
         boxShadow: "0 10px 40px rgba(0,0,0,0.08)",

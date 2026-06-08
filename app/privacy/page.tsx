@@ -11,7 +11,7 @@ export default function PrivacyPage() {
           Terms & Privacy Policy
         </h1>
         
-        <div style={{ background: "#fff", padding: "40px", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+        <div style={{ background: "var(--color-bg)", padding: "40px", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
           
           <section style={{ marginBottom: 32 }}>
             <h2 style={{ fontSize: "1.5rem", color: "var(--color-primary)", marginBottom: 12 }}>1. Data Collection</h2>

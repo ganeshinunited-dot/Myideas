@@ -11,7 +11,7 @@ export default function AboutPage() {
           About
         </h1>
         
-        <div style={{ background: "#fff", padding: "40px", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+        <div style={{ background: "var(--color-bg)", padding: "40px", borderRadius: 16, border: "1px solid var(--color-border)", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
           <p style={{ fontSize: "1.1rem", lineHeight: 1.8, color: "var(--color-text)", marginBottom: 20 }}>
             Hi, I am Ganesh. I created this platform to help users find high-quality, authentic information efficiently.
           </p>

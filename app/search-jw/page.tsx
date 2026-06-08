@@ -97,7 +97,7 @@ export default function SearchJWPage() {
               padding: "8px 18px",
               borderRadius: 24,
               border: "1px solid var(--color-border)",
-              background: "#fff",
+              background: "var(--color-bg)",
               cursor: "pointer",
               fontSize: 14,
               fontWeight: 500,
@@ -125,7 +125,7 @@ export default function SearchJWPage() {
                 position: "absolute",
                 top: "100%",
                 marginTop: 6,
-                background: "#fff",
+                background: "var(--color-bg)",
                 border: "1px solid var(--color-border)",
                 borderRadius: 12,
                 boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
@@ -180,7 +180,7 @@ export default function SearchJWPage() {
           style={{ 
             display: "flex", 
             width: "100%", 
-            background: "#fff",
+            background: "var(--color-bg)",
             border: "1px solid var(--color-border)",
             borderRadius: 12,
             overflow: "hidden",
@@ -292,7 +292,7 @@ export default function SearchJWPage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   {allData.texts.map((res: any, i: number) => (
                     <a key={i} href={res.link} target="_blank" rel="noopener noreferrer" style={{
-                        display: "flex", flexDirection: "column", background: "#fff",
+                        display: "flex", flexDirection: "column", background: "var(--color-bg)",
                         padding: "16px", border: "1px solid var(--color-border)", borderRadius: 12,
                         textDecoration: "none"
                       }}
@@ -380,7 +380,7 @@ export default function SearchJWPage() {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  background: "#fff",
+                  background: "var(--color-bg)",
                   border: "1px solid var(--color-border)",
                   borderRadius: 12,
                   overflow: "hidden",
