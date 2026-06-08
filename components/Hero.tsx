@@ -90,12 +90,9 @@ export default function Hero() {
       position: "relative",
     }}>
       
-      {/* Top Right Visitor Counter */}
+      {/* Top Visitor Counter */}
       {visitorCount !== null && (
         <div style={{
-          position: "absolute",
-          top: "80px",
-          right: "20px",
           background: "var(--color-bg-alt)",
           border: "1px solid var(--color-border)",
           padding: "6px 12px",
@@ -105,7 +102,8 @@ export default function Hero() {
           display: "flex",
           alignItems: "center",
           gap: "6px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.02)"
+          boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+          marginBottom: "24px"
         }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-primary)" }}>
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
