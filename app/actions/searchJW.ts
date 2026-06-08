@@ -17,51 +17,36 @@ export async function searchJW(query: string, tab: string = "all", lang: string 
 
   try {
     if (tab === "all") {
-      // 1. Fetch text results from Watchtower Online Library (search endpoint)
-      const wolQuery = encodeURIComponent(query);
-      const searchUrl = `https://wol.jw.org/${langConfig.urlLang}/wol/s/${langConfig.region}/${langConfig.lp}?q=${wolQuery}`;
+      // 1. Fetch text results using DuckDuckGo targeting JW.org library
+      const ddgQuery = encodeURIComponent(`site:jw.org/${langConfig.urlLang}/library/ ${query}`);
+      const searchUrl = `https://html.duckduckgo.com/html/?q=${ddgQuery}`;
       
       const res = await fetch(searchUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64 AppleWebKit/537.36)' }
       });
       const html = await res.text();
       const $ = cheerio.load(html);
       
       const texts: any[] = [];
 
-      // Method 1: Parse Topic results (common in English)
-      $('ul.directory.resultContentTopic').each((_i, el) => {
-        if (texts.length >= 10) return;
-        const title = $(el).find('li.caption a.lnk').text().trim();
-        let link = $(el).find('li.caption a.lnk').attr('href');
-        if (link && link.startsWith('/')) link = 'https://wol.jw.org' + link;
-        const snippet = $(el).find('li.result li.ref').text().trim() || $(el).find('li.result li').text().trim();
+      $('.result').each((_i, el) => {
+        if (texts.length >= 5) return;
+        const title = $(el).find('.result__title a').text().trim();
+        const rawLink = $(el).find('.result__url').attr('href');
+        const snippet = $(el).find('.result__snippet').text().trim();
+        
+        let link = rawLink;
+        if (rawLink && rawLink.includes('uddg=')) {
+          try {
+            const url = new URL('https:' + rawLink);
+            link = decodeURIComponent(url.searchParams.get('uddg'));
+          } catch(e) {}
+        }
         
         if (title && link) {
           texts.push({ title, link, description: snippet, image: null });
         }
       });
-
-      // Method 2: Parse Document results (common in Nepali/other languages)
-      if (texts.length === 0) {
-        $('a.lnk').each((_i, el) => {
-          if (texts.length >= 10) return;
-          const title = $(el).text().trim();
-          let link = $(el).attr('href');
-          if (link && link.startsWith('/')) link = 'https://wol.jw.org' + link;
-          // Remove query params from display link
-          if (link) {
-            const parentLi = $(el).closest('li');
-            const snippet = parentLi.next('li.result').find('li.ref').text().trim() 
-              || parentLi.parent().find('li.ref').text().trim()
-              || '';
-
-            if (title && link) {
-              texts.push({ title, link: link.split('?')[0], description: snippet || title, image: null });
-            }
-          }
-        });
-      }
 
       // 2. Fetch Images from Google
       let images: any[] = [];
