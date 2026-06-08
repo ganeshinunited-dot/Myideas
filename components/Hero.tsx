@@ -162,7 +162,7 @@ export default function Hero() {
         </h3>
         
         {/* Horizontal Scrollable Emotions */}
-        <div style={{
+        <div className="hide-scrollbar" style={{
           display: "flex",
           gap: "12px",
           width: "100%",
@@ -170,9 +170,8 @@ export default function Hero() {
           padding: "0 24px 16px",
           scrollSnapType: "x mandatory",
           WebkitOverflowScrolling: "touch",
-          scrollbarWidth: "none", // Firefox
         }}>
-          <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
+
           
           {EMOTIONS.map(emotion => (
             <button
@@ -204,15 +203,9 @@ export default function Hero() {
             {loadingEmotion ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "20px 0", color: "var(--color-primary)", fontWeight: 500, fontSize: "0.9rem" }}>
                 <span className="loading-dots">Finding the best articles</span>
-                <style jsx>{`
-                  @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
-                  .loading-dots::after { content: '.'; animation: blink 1.4s infinite both; }
-                  .loading-dots { display: inline-block; position: relative; }
-                  .loading-dots::before { content: '..'; position: absolute; left: 100%; top: 0; animation: blink 1.4s infinite both; animation-delay: 0.2s; letter-spacing: 2px; }
-                `}</style>
               </div>
             ) : emotionArticles.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px", animation: "fadeIn 0.3s ease-in-out" }}>
+              <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginBottom: "4px" }}>Suggested for you:</p>
                 {emotionArticles.map((article, i) => (
                   <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
@@ -259,9 +252,7 @@ export default function Hero() {
         </div>
       </div>
       
-      <style jsx global>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
+
     </section>
   );
 }
