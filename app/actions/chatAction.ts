@@ -1,10 +1,10 @@
 "use server";
 
 export async function processEmotionChat(userInput: string) {
-  const token = process.env.HF_TOKEN || process.env.AI_API_KEY;
+  const token = process.env.GROQ_API_KEY;
   
   if (!token) {
-    return { error: "कृपया सिस्टममा HF_TOKEN वा AI_API_KEY राख्नुहोस् (Please add API key to .env)" };
+    return { error: "कृपया सिस्टममा GROQ_API_KEY राख्नुहोस् (Please add API key to .env)" };
   }
 
   const prompt = `You are a strict keyword extractor for a search engine. 
@@ -14,16 +14,16 @@ Output ONLY 1 or 2 english keywords that represent their core issue or topic (e.
 DO NOT write any other words, explanations, or conversational text. ONLY output the keywords.`;
 
   try {
-    const res = await fetch("https://router.huggingface.co/v1/chat/completions", {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "meta-llama/Meta-Llama-3-8B-Instruct", // Reliable HF model
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 300
+        max_tokens: 50
       })
     });
 
