@@ -217,8 +217,7 @@ export default function Hero() {
           {t("hero.question")}
         </h3>
         
-
-          
+        <div style={{ width: "100%", padding: "0 24px" }}>
           <form 
             onSubmit={handleCustomSubmit} 
             style={{ 
