@@ -37,7 +37,6 @@ export default function Hero() {
 
   // Custom AI State
   const [customInput, setCustomInput] = useState("");
-  const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   useEffect(() => {
@@ -68,7 +67,6 @@ export default function Hero() {
     }
     
     setCustomInput("");
-    setAiMessage(null);
     setSelectedEmotion(emotion.id);
     setLoadingEmotion(true);
     setEmotionArticles([]);
@@ -91,18 +89,15 @@ export default function Hero() {
 
     setSelectedEmotion(null);
     setEmotionArticles([]);
-    setAiMessage(null);
     setIsAiLoading(true);
 
     try {
       const aiRes = await processEmotionChat(customInput);
       
       if (aiRes.error) {
-        setAiMessage(aiRes.error);
+        console.error(aiRes.error);
         return;
       }
-
-      setAiMessage(aiRes.message || "");
 
       // Fetch JW.org articles using the extracted keywords
       if (aiRes.keywords) {
@@ -113,7 +108,6 @@ export default function Hero() {
       }
     } catch (err) {
       console.error(err);
-      setAiMessage("I am so sorry you are feeling this way. You are not alone, and there is always hope and help available.");
     } finally {
       setIsAiLoading(false);
     }
@@ -279,29 +273,14 @@ export default function Hero() {
         </div>
 
         {/* Dynamic Results Area */}
-        {(selectedEmotion || isAiLoading || aiMessage) && (
+        {(selectedEmotion || isAiLoading || emotionArticles.length > 0) && (
           <div style={{ width: "100%", padding: "0 24px", textAlign: "left", marginTop: "24px" }}>
             {(loadingEmotion || isAiLoading) ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "20px 0", color: "var(--color-primary)", fontWeight: 500, fontSize: "0.9rem" }}>
-                <span className="loading-dots">{isAiLoading ? "Understanding your feelings" : "Finding the best articles"}</span>
+                <span className="loading-dots">{isAiLoading ? "Finding the best articles" : "Finding the best articles"}</span>
               </div>
             ) : (
               <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                
-                {aiMessage && (
-                  <div style={{ 
-                    padding: "16px", 
-                    background: "rgba(37, 99, 235, 0.05)", 
-                    borderRadius: "16px", 
-                    border: "1px solid rgba(37, 99, 235, 0.1)",
-                    color: "var(--color-text)",
-                    fontSize: "0.95rem",
-                    lineHeight: 1.6,
-                    fontStyle: "italic"
-                  }}>
-                    {aiMessage}
-                  </div>
-                )}
 
                 {emotionArticles.length > 0 ? (
                   <>

@@ -7,9 +7,11 @@ export async function processEmotionChat(userInput: string) {
     return { error: "कृपया सिस्टममा HF_TOKEN वा AI_API_KEY राख्नुहोस् (Please add API key to .env)" };
   }
 
-  const prompt = `You are a deeply empathetic assistant. The user says: "${userInput}". 
-Reply with a warm, comforting paragraph in the exact SAME language the user used (e.g. if they typed in Romanized Nepali like 'garo chha', reply in Romanized Nepali). Keep it under 4 sentences.
-At the very end of your response, on a new line, write EXACTLY: KEYWORDS: [1 or 2 english keywords representing their core issue, e.g. anxiety, stress].`;
+  const prompt = `You are a strict keyword extractor for a search engine. 
+The user says: "${userInput}". 
+Analyze their true intent, emotion, or question.
+Output ONLY 1 or 2 english keywords that represent their core issue or topic (e.g. anxiety, purpose of life, marriage, stress, hope).
+DO NOT write any other words, explanations, or conversational text. ONLY output the keywords.`;
 
   try {
     const res = await fetch("https://router.huggingface.co/v1/chat/completions", {
@@ -34,17 +36,10 @@ At the very end of your response, on a new line, write EXACTLY: KEYWORDS: [1 or 
     const data = await res.json();
     const text = data.choices[0].message.content;
 
-    // Parse the response
-    const keywordMatch = text.match(/KEYWORDS:\s*(.*)/i);
-    let keywords = "comfort";
-    let message = text;
+    // The AI is instructed to ONLY output the keywords.
+    const keywords = text.replace(/[^a-zA-Z\s,]/g, '').trim();
 
-    if (keywordMatch && keywordMatch[1]) {
-      keywords = keywordMatch[1].replace(/[^a-zA-Z\s,]/g, '').trim();
-      message = text.replace(keywordMatch[0], '').trim();
-    }
-
-    return { message, keywords };
+    return { keywords };
   } catch (error) {
     console.error("Chat Action Error:", error);
     return { error: "Failed to connect to AI server." };
