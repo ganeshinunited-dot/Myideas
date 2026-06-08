@@ -99,8 +99,7 @@ export default function Hero() {
       }}>
         <span>&copy; {new Date().getFullYear()} Ganesh Karki</span>
         <div style={{ display: "flex", gap: 16 }}>
-          <a href="/privacy-policy" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Privacy Policy</a>
-          <a href="/terms-and-conditions" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Terms</a>
+          <a href="/privacy-policy" style={{ color: "var(--color-text-light)", textDecoration: "none", fontSize: 12 }}>Terms & Privacy Policy</a>
         </div>
         
         {/* Visitor Counter */}
