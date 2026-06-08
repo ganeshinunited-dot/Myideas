@@ -9,20 +9,23 @@ export async function processEmotionChat(userInput: string) {
     return { error: "कृपया सिस्टममा DO_AI_KEY वा GROQ_API_KEY राख्नुहोस्" };
   }
 
-  const prompt = `You are an empathetic JW.org research specialist.
+  const prompt = `You are a JW.org research specialist.
 The user says: "${userInput}"
 
-Analyze their emotional pain and intent. Extract the BEST search keywords for Watchtower Online Library.
+Determine if the user is making a DIRECT search query (looking for a specific article, video, or topic) or expressing EMOTIONAL pain.
 
 CRITICAL RULES:
-1. Detect the language. If the user writes in Romanized Nepali (e.g., "malai dukha lagyo") or Devanagari, the language MUST be "ne". If English, "en".
-2. KEYWORDS MUST BE IN DEVANAGARI SCRIPT if the language is "ne". Never output romanized nepali keywords. Example: "dukha" -> "दुःख", "santi" -> "शान्ति".
-3. Use spiritual JW terms for keywords (e.g., "बाइबलको सान्त्वना", "दुःखकष्ट", "परिवार"). DO NOT repeat the user's exact words. Translate them into 2-3 precise JW.org search terms.
+1. Detect the language. If Romanized Nepali (e.g., "malai dukha lagyo") or Devanagari, language MUST be "ne". If English, "en".
+2. KEYWORDS MUST BE IN DEVANAGARI SCRIPT if the language is "ne". Never output romanized nepali keywords.
+3. KEYWORD EXTRACTION LOGIC:
+   - If it's a DIRECT SEARCH (e.g., "why does god allow suffering", "awaken magazine about family", "मृत्यु"), extract the EXACT keywords from their query translated to the target script. DO NOT add random emotional words.
+   - If it's EMOTIONAL PAIN (e.g., "I am very sad", "my dad died"), extract precise JW.org spiritual solution terms (e.g., "बाइबलको सान्त्वना", "आशा", "मृत्यु").
+4. Output 2 to 4 highly accurate search keywords.
 
 Output valid JSON ONLY:
 {
   "language": "ne",
-  "keywords": "दुःख सान्त्वना आशा"
+  "keywords": "exact search terms"
 }
 `;
 
