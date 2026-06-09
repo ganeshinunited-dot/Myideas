@@ -4,6 +4,15 @@ import { searchJW } from "@/app/actions/searchJW";
 import { processEmotionChat } from "@/app/actions/chatAction";
 import { useTranslation } from "./I18nProvider";
 
+type ChatMessage = {
+  id: string;
+  role: "user" | "ai";
+  content?: string;
+  reasoning?: string;
+  articles?: any[];
+  isError?: boolean;
+};
+
 const quotes = [
   "I'm not perfect at anything; I'm just a lifelong learner.",
   "Every day is a chance to learn something completely new.",
@@ -33,16 +42,18 @@ export default function Hero() {
   const [fade, setFade] = useState(true);
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
   
-  // Emotion state
-  const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
-  const [loadingEmotion, setLoadingEmotion] = useState(false);
-  const [emotionArticles, setEmotionArticles] = useState<any[]>([]);
-
-  // Custom AI State
-  const [customInput, setCustomInput] = useState("");
-  const [lastQuery, setLastQuery] = useState<string | null>(null);
+  // Chat History State
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory, isAiLoading]);
+
+  // Custom Input State
+  const [customInput, setCustomInput] = useState("");
 
   // Drag to scroll state
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -94,31 +105,26 @@ export default function Hero() {
 
   const handleEmotionClick = async (emotion: typeof EMOTIONS[0]) => {
     if (dragMoved) return; // Prevent click if the user was dragging
-
-    if (selectedEmotion === emotion.id) {
-      setSelectedEmotion(null);
-      setEmotionArticles([]);
-      setErrorMessage(null);
-      return;
-    }
     
     setCustomInput("");
-    setLastQuery(emotion.query);
-    setSelectedEmotion(emotion.id);
-    setLoadingEmotion(true);
-    setEmotionArticles([]);
-    setErrorMessage(null);
+    setIsAiLoading(true);
+
+    const userMessage: ChatMessage = { id: Date.now().toString(), role: "user", content: emotion.query };
+    setChatHistory(prev => [...prev, userMessage]);
     
     try {
       const res: any = await searchJW(emotion.query, "all", lang); 
-      if (res && res.texts) {
-        setEmotionArticles(res.texts.slice(0, 50));
+      if (res && res.texts && res.texts.length > 0) {
+        const aiMessage: ChatMessage = { id: (Date.now() + 1).toString(), role: "ai", articles: res.texts.slice(0, 50) };
+        setChatHistory(prev => [...prev, aiMessage]);
+      } else {
+        setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "No articles found.", isError: true }]);
       }
     } catch (err) {
       console.error(err);
-      setErrorMessage("Error fetching articles.");
+      setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "Error fetching articles.", isError: true }]);
     } finally {
-      setLoadingEmotion(false);
+      setIsAiLoading(false);
     }
   };
 
@@ -126,65 +132,64 @@ export default function Hero() {
     e.preventDefault();
     if (!customInput.trim()) return;
 
-    setSelectedEmotion(null);
-    setLastQuery(customInput);
+    const query = customInput;
     setCustomInput("");
-    setEmotionArticles([]);
-    setErrorMessage(null);
     setIsAiLoading(true);
 
+    const userMessage: ChatMessage = { id: Date.now().toString(), role: "user", content: query };
+    setChatHistory(prev => [...prev, userMessage]);
+
     try {
-      const aiRes = await processEmotionChat(customInput);
+      const aiRes = await processEmotionChat(query);
       
       if ("error" in aiRes && aiRes.error) {
-        console.error(aiRes.error);
-        setErrorMessage("AI Error: " + aiRes.error);
+        setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "AI Error: " + aiRes.error, isError: true }]);
         return;
       }
 
       // Fetch JW.org articles using the extracted keywords and detected language
       if ("keywords" in aiRes && aiRes.keywords) {
         const searchRes: any = await searchJW(aiRes.keywords as string, "all", (aiRes as any).lang || "en");
-        if (searchRes && searchRes.texts) {
-          setEmotionArticles(searchRes.texts.slice(0, 50));
+        if (searchRes && searchRes.texts && searchRes.texts.length > 0) {
+          setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", reasoning: aiRes.reasoning, articles: searchRes.texts.slice(0, 50) }]);
         } else {
-          setErrorMessage("No articles found.");
+          setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", reasoning: aiRes.reasoning, content: "No articles found.", isError: true }]);
         }
       } else {
-        setErrorMessage("Error extracting keywords.");
+        setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "Error extracting keywords.", isError: true }]);
       }
     } catch (err) {
       console.error(err);
-      setErrorMessage("System Error. Please try again.");
+      setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "System Error. Please try again.", isError: true }]);
     } finally {
       setIsAiLoading(false);
     }
   };
 
-  const isChatStarted = isAiLoading || emotionArticles.length > 0 || errorMessage;
+  const isChatStarted = chatHistory.length > 0 || isAiLoading;
 
   return (
     <section className="hero-section" style={{
-      minHeight: "100vh",
+      height: "100vh",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "flex-start",
-      padding: "100px 20px 180px",
+      padding: "80px 20px 180px",
       textAlign: "center",
       position: "relative",
+      overflow: "hidden" // To allow inner scrolling
     }}>
       
       {/* Top Visitor Counter */}
-      {visitorCount !== null && (
-        <div style={{
+      {visitorCount !== null && !isChatStarted && (
+        <div className="desktop-only" style={{
           background: "var(--color-bg-alt)",
           border: "1px solid var(--color-border)",
           padding: "6px 12px",
           borderRadius: "20px",
           fontSize: "12px",
           color: "var(--color-text-muted)",
-          display: "flex",
           alignItems: "center",
           gap: "6px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
@@ -198,74 +203,73 @@ export default function Hero() {
         </div>
       )}
 
-
-
-      {/* Dynamic Results Area */}
-      <div style={{ width: "100%", maxWidth: "600px", zIndex: 10 }}>
-        {(selectedEmotion || isAiLoading || emotionArticles.length > 0 || errorMessage) && (
-          <div style={{ width: "100%", textAlign: "left", marginBottom: "40px" }}>
-            {lastQuery && (
-              <div style={{ 
-                display: "flex", 
-                justifyContent: "flex-end", 
-                marginBottom: "24px",
-                padding: "0 16px"
-              }}>
-                <div style={{
-                  background: "var(--color-bg-alt)",
-                  color: "var(--color-text)",
-                  padding: "12px 20px",
-                  borderRadius: "20px 20px 4px 20px",
-                  fontSize: "1rem",
-                  maxWidth: "85%",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                  border: "1px solid var(--color-border)",
-                  wordBreak: "break-word"
-                }}>
-                  {lastQuery}
+      {/* Dynamic Chat Area */}
+      <div className="chat-history-container hide-scrollbar" style={{ zIndex: 10 }}>
+        {chatHistory.map((msg) => (
+          <div key={msg.id} className={`chat-message-row ${msg.role}`}>
+            <div className={`chat-bubble ${msg.role} ${msg.isError ? 'error' : ''}`}>
+              {msg.reasoning && (
+                <details className="reasoning-container">
+                  <summary className="reasoning-toggle" style={{ listStyle: "none" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Thought Process
+                  </summary>
+                  <div className="reasoning-content">
+                    {msg.reasoning}
+                  </div>
+                </details>
+              )}
+              {msg.content && (
+                <div style={{ color: msg.isError ? "#ff4d4f" : "inherit" }}>
+                  {msg.content}
                 </div>
+              )}
+              {msg.articles && msg.articles.length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <p style={{ margin: "0 0 8px", fontSize: "0.9rem", color: "var(--color-text-muted)" }}>
+                    Here is what I found:
+                  </p>
+                  {msg.articles.map((article, i) => (
+                    <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
+                      display: "block",
+                      padding: "12px",
+                      background: "var(--color-bg)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "12px",
+                      textDecoration: "none",
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+                      textAlign: "left"
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}
+                    >
+                      <h4 style={{ color: "var(--color-primary-dark)", margin: "0 0 4px 0", fontSize: "0.95rem", lineHeight: 1.3 }}>{article.title}</h4>
+                      <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.85rem", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                        {article.description}
+                      </p>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+        
+        {isAiLoading && (
+          <div className="chat-message-row ai">
+            <div className="chat-bubble ai">
+              <div className="typing-indicator">
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
               </div>
-            )}
-            
-            {(loadingEmotion || isAiLoading) ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", color: "var(--color-primary)", fontWeight: 500, fontSize: "1.1rem" }}>
-                <span className="loading-dots">{isAiLoading ? "Finding the best articles" : "Finding the best articles"}</span>
-              </div>
-            ) : errorMessage ? (
-              <p style={{ textAlign: "center", color: "#ff4d4f", fontSize: "0.9rem", padding: "16px", background: "rgba(255, 77, 79, 0.1)", borderRadius: "8px", border: "1px solid rgba(255, 77, 79, 0.3)" }}>
-                {errorMessage}
-              </p>
-            ) : (
-              <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-
-                {emotionArticles.length > 0 ? (
-                  <>
-                    {emotionArticles.map((article, i) => (
-                      <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
-                        display: "block",
-                        padding: "16px",
-                        background: "var(--color-bg)",
-                        border: "1px solid var(--color-border)",
-                        borderRadius: "12px",
-                        textDecoration: "none",
-                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.02)"
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.06)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.02)"; }}
-                      >
-                        <h4 style={{ color: "var(--color-primary-dark)", margin: "0 0 6px 0", fontSize: "1.05rem", lineHeight: 1.3 }}>{article.title}</h4>
-                        <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.9rem", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                          {article.description}
-                        </p>
-                      </a>
-                    ))}
-                  </>
-                ) : null}
-              </div>
-            )}
+            </div>
           </div>
         )}
+        <div ref={chatEndRef} />
       </div>
 
         {/* Fixed Chat Input Area */}

@@ -12,7 +12,8 @@ export async function processEmotionChat(userInput: string) {
   const prompt = `You are a JW.org research specialist.
 The user says: "${userInput}"
 
-Determine if the user is making a DIRECT search query (looking for a specific article, video, or topic) or expressing EMOTIONAL pain.
+Your ONLY capacity is to search for spiritual solutions from JW.org. You cannot answer general knowledge questions.
+Determine if the user is making a DIRECT search query or expressing EMOTIONAL pain.
 
 CRITICAL RULES:
 1. Detect the language. If Romanized Nepali (e.g., "malai dukha lagyo") or Devanagari, language MUST be "ne". If English, "en".
@@ -22,8 +23,9 @@ CRITICAL RULES:
    - If it's EMOTIONAL PAIN (e.g., "I am very sad", "my dad died"), extract precise JW.org spiritual solution terms (e.g., "बाइबलको सान्त्वना", "आशा", "मृत्यु").
 4. Output 2 to 4 highly accurate search keywords.
 
-Output valid JSON ONLY:
+Output valid JSON ONLY with the following structure:
 {
+  "reasoning": "Explain your thought process. Note that your ONLY purpose is to find relevant answers from JW.org.",
   "language": "ne",
   "keywords": "exact search terms"
 }
@@ -74,12 +76,14 @@ Output valid JSON ONLY:
     let keywords = "comfort";
     let lang = "en";
     let message = "";
+    let reasoning = "";
 
     try {
       // Extract JSON from response (handle cases where model wraps in markdown)
       const jsonMatch = text.match(/\{[\s\S]*?\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.reasoning) reasoning = parsed.reasoning;
         if (parsed.language) lang = parsed.language.toLowerCase();
         if (parsed.keywords) keywords = parsed.keywords;
         if (parsed.message) message = parsed.message;
@@ -92,7 +96,7 @@ Output valid JSON ONLY:
       console.error("JSON parse error:", e);
     }
 
-    return { keywords, lang, message };
+    return { reasoning, keywords, lang, message };
   } catch (error) {
     console.error("Chat Action Error:", error);
     
@@ -132,9 +136,11 @@ async function processWithGroqFallback(userInput: string, token: string, prompt:
     let keywords = "comfort";
     let lang = "en";
     let message = "";
+    let reasoning = "";
 
     try {
       const parsed = JSON.parse(text);
+      if (parsed.reasoning) reasoning = parsed.reasoning;
       if (parsed.language) lang = parsed.language.toLowerCase();
       if (parsed.keywords) keywords = parsed.keywords;
       if (parsed.message) message = parsed.message;
@@ -143,7 +149,7 @@ async function processWithGroqFallback(userInput: string, token: string, prompt:
       if (lang.includes("en") || lang === "english") lang = "en";
     } catch(e) {}
 
-    return { keywords, lang, message };
+    return { reasoning, keywords, lang, message };
   } catch {
     return { error: "All AI servers unreachable." };
   }
