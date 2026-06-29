@@ -231,13 +231,13 @@ export default function Hero() {
       {/* Dynamic Chat Area */}
       <div className="chat-history-container hide-scrollbar" style={{ zIndex: 10 }}>
         {chatHistory.map((msg) => (
-          <div key={msg.id} className={`chat-message-row ${msg.role}`} style={{ display: "flex", gap: "12px", alignItems: "flex-start", width: "100%", justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+          <div key={msg.id} className={`chat-message-row ${msg.role}`} style={{ display: "flex", gap: "12px", alignItems: "flex-end", width: "100%", padding: "4px 0" }}>
             {msg.role === 'ai' && (
-              <div style={{ background: "var(--color-primary)", color: "#fff", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))", color: "#fff", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "var(--shadow-sm)" }}>
                 <Bot size={20} />
               </div>
             )}
-            <div className={`chat-bubble ${msg.role} ${msg.isError ? 'error' : ''}`} style={{ maxWidth: "85%", borderRadius: "16px", padding: "16px", textAlign: "left", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", background: msg.role === 'user' ? "var(--color-bg-alt)" : "var(--color-bg)", border: "1px solid var(--color-border)" }}>
+            <div className={`chat-bubble ${msg.role} ${msg.isError ? 'error' : ''}`}>
               {msg.reasoning && (
                 <details className="reasoning-container">
                   <summary className="reasoning-toggle" style={{ listStyle: "none", cursor: "pointer", fontSize: "0.85rem", color: "var(--color-text-muted)", display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
@@ -259,7 +259,7 @@ export default function Hero() {
 
             </div>
             {msg.role === 'user' && (
-              <div style={{ background: "var(--color-text)", color: "var(--color-bg)", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ background: "linear-gradient(135deg, var(--color-text), var(--color-text-muted))", color: "var(--color-bg)", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "var(--shadow-sm)" }}>
                 <User size={20} />
               </div>
             )}
@@ -267,11 +267,11 @@ export default function Hero() {
         ))}
         
         {isAiLoading && (
-          <div className="chat-message-row ai" style={{ display: "flex", gap: "12px", alignItems: "flex-start", width: "100%" }}>
-            <div style={{ background: "var(--color-primary)", color: "#fff", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div className="chat-message-row ai" style={{ display: "flex", gap: "12px", alignItems: "flex-end", width: "100%", padding: "4px 0" }}>
+            <div style={{ background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))", color: "#fff", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "var(--shadow-sm)" }}>
               <Bot size={20} />
             </div>
-            <div className="chat-bubble ai" style={{ maxWidth: "85%", borderRadius: "16px", padding: "16px", background: "var(--color-bg)", border: "1px solid var(--color-border)", display: "flex", alignItems: "center" }}>
+            <div className="chat-bubble ai" style={{ display: "flex", alignItems: "center" }}>
               <div className="typing-indicator" style={{ margin: 0 }}>
                 <div className="typing-dot"></div>
                 <div className="typing-dot"></div>
@@ -304,7 +304,8 @@ export default function Hero() {
           <div className="animated-border-box">
             <form 
               onSubmit={handleCustomSubmit} 
-              className="animated-border-box-inner"
+              className="animated-border-box-inner glass-panel"
+              style={{ display: "flex", gap: "12px", padding: "8px 16px" }}
             >
               <input 
                 type="text" 
