@@ -1,6 +1,6 @@
 "use server";
 
-export async function processEmotionChat(userInput: string) {
+export async function processEmotionChat(userInput: string, history: {role: string, content?: string}[] = []) {
   // Priority: DigitalOcean Inference (Paid, accurate) > Groq (Free, fallback)
   const doToken = process.env.DO_AI_KEY;
   const groqToken = process.env.GROQ_API_KEY;
@@ -9,11 +9,16 @@ export async function processEmotionChat(userInput: string) {
     return { error: "कृपया सिस्टममा DO_AI_KEY वा GROQ_API_KEY राख्नुहोस्" };
   }
 
+  const historyText = history.map(m => `${m.role.toUpperCase()}: ${m.content || ''}`).join('\n');
+
   const prompt = `You are a JW.org research specialist.
-The user says: "${userInput}"
+Here is the conversation history:
+${historyText}
+
+The user's latest query is: "${userInput}"
 
 Your ONLY capacity is to search for spiritual solutions from JW.org. You cannot answer general knowledge questions.
-Determine if the user is making a DIRECT search query or expressing EMOTIONAL pain.
+Determine if the user's latest query (with context from history) is making a DIRECT search query or expressing EMOTIONAL pain.
 
 CRITICAL RULES:
 1. Detect the language. If Romanized Nepali (e.g., "malai dukha lagyo") or Devanagari, language MUST be "ne". If English, "en".
@@ -259,3 +264,113 @@ async function generateSpeechGroqFallback(prompt: string, token: string): Promis
   }
 }
 
+export async function generateConversationalAnswer(
+  chatHistory: { role: string; content?: string }[],
+  query: string,
+  searchResults: any[],
+  lang: string
+): Promise<{ text?: string; error?: string }> {
+  const doToken = process.env.DO_AI_KEY;
+  const groqToken = process.env.GROQ_API_KEY;
+
+  if (!doToken && !groqToken) {
+    return { error: "AI API keys are missing." };
+  }
+
+  // Format search results for the prompt
+  const formattedResults = searchResults.map((r, i) => `[Source ${i + 1}]: ${r.title}\n${r.description || ''}`).join('\n\n');
+
+  // Format chat history
+  const historyText = chatHistory.map(m => `${m.role.toUpperCase()}: ${m.content || ''}`).join('\n');
+
+  const langInstruction = lang === "ne"
+    ? "You MUST answer entirely in conversational Nepali (Devanagari script). Make it natural, warm, and empathetic. Use terms like 'तपाईं', 'हामी' and sound like a helpful human assistant. Do not sound like a robot."
+    : "You MUST answer in English. Make it natural and conversational.";
+
+  const prompt = `You are a helpful and deeply knowledgeable JW.org research assistant.
+Your goal is to answer the user's latest question based strictly on the provided JW.org search results.
+
+CRITICAL INSTRUCTIONS:
+1. ONLY use the provided search results to answer the question. Do NOT invent information or use outside knowledge. If the answer cannot be found in the results, politely state that you could not find the exact answer on JW.org right now.
+2. Provide a direct, conversational, and comprehensive answer to the user's question. Do not just summarize the articles; answer the question organically.
+3. ${langInstruction}
+4. When quoting the Bible, you MUST only use the New World Translation (NWT).
+
+--- CONVERSATION HISTORY ---
+${historyText}
+
+--- LATEST USER QUESTION ---
+${query}
+
+--- SEARCH RESULTS FROM JW.ORG ---
+${formattedResults}
+
+Answer the latest question in a highly conversational and natural tone:`;
+
+  const useDigitalOcean = !!doToken;
+  const apiUrl = useDigitalOcean
+    ? "https://inference.do-ai.run/v1/chat/completions"
+    : "https://api.groq.com/openai/v1/chat/completions";
+  const apiKey = useDigitalOcean ? doToken : groqToken;
+  const model = useDigitalOcean ? "llama3.3-70b-instruct" : "llama-3.3-70b-versatile";
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      signal: AbortSignal.timeout(15000),
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: "You are a friendly, deeply knowledgeable JW.org research assistant." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.5
+      })
+    });
+
+    if (!res.ok) {
+      if (useDigitalOcean && groqToken) {
+        return generateConversationalAnswerGroq(prompt, groqToken);
+      }
+      return { error: "Failed to generate answer." };
+    }
+
+    const data = await res.json();
+    return { text: data.choices?.[0]?.message?.content || "" };
+  } catch (error) {
+    if (useDigitalOcean && groqToken) {
+      return generateConversationalAnswerGroq(prompt, groqToken);
+    }
+    return { error: "Failed to connect to AI server." };
+  }
+}
+
+async function generateConversationalAnswerGroq(prompt: string, token: string): Promise<{ text?: string; error?: string }> {
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: "You are a friendly, deeply knowledgeable JW.org research assistant." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.5
+      })
+    });
+
+    if (!res.ok) return { error: "Both AI providers failed." };
+    const data = await res.json();
+    return { text: data.choices?.[0]?.message?.content || "" };
+  } catch {
+    return { error: "All AI servers unreachable." };
+  }
+}

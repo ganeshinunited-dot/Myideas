@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { searchJW } from "@/app/actions/searchJW";
-import { processEmotionChat } from "@/app/actions/chatAction";
+import { processEmotionChat, generateConversationalAnswer } from "@/app/actions/chatAction";
 import { useTranslation } from "./I18nProvider";
+import { User, Bot } from "lucide-react";
 
 type ChatMessage = {
   id: string;
@@ -104,21 +105,29 @@ export default function Hero() {
   };
 
   const handleEmotionClick = async (emotion: typeof EMOTIONS[0]) => {
-    if (dragMoved) return; // Prevent click if the user was dragging
+    if (dragMoved) return; 
     
     setCustomInput("");
     setIsAiLoading(true);
 
     const userMessage: ChatMessage = { id: Date.now().toString(), role: "user", content: emotion.query };
-    setChatHistory(prev => [...prev, userMessage]);
+    const currentHistory = [...chatHistory, userMessage];
+    setChatHistory(currentHistory);
     
     try {
       const res: any = await searchJW(emotion.query, "all", lang); 
       if (res && res.texts && res.texts.length > 0) {
-        const aiMessage: ChatMessage = { id: (Date.now() + 1).toString(), role: "ai", articles: res.texts.slice(0, 50) };
-        setChatHistory(prev => [...prev, aiMessage]);
+        const answerRes = await generateConversationalAnswer(currentHistory, emotion.query, res.texts.slice(0, 10), lang);
+        
+        setChatHistory(prev => [...prev, { 
+          id: (Date.now() + 1).toString(), 
+          role: "ai", 
+          content: answerRes.text || "Here are some articles I found:",
+          articles: res.texts.slice(0, 10),
+          isError: !!answerRes.error
+        }]);
       } else {
-        setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "No articles found.", isError: true }]);
+        setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "I couldn't find any articles about this.", isError: true }]);
       }
     } catch (err) {
       console.error(err);
@@ -137,26 +146,35 @@ export default function Hero() {
     setIsAiLoading(true);
 
     const userMessage: ChatMessage = { id: Date.now().toString(), role: "user", content: query };
-    setChatHistory(prev => [...prev, userMessage]);
+    const currentHistory = [...chatHistory, userMessage];
+    setChatHistory(currentHistory);
 
     try {
-      const aiRes = await processEmotionChat(query);
+      const aiRes = await processEmotionChat(query, currentHistory);
       
       if ("error" in aiRes && aiRes.error) {
         setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "AI Error: " + aiRes.error, isError: true }]);
         return;
       }
 
-      // Fetch JW.org articles using the extracted keywords and detected language
       if ("keywords" in aiRes && aiRes.keywords) {
         const searchRes: any = await searchJW(aiRes.keywords as string, "all", (aiRes as any).lang || "en");
         if (searchRes && searchRes.texts && searchRes.texts.length > 0) {
-          setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", reasoning: aiRes.reasoning, articles: searchRes.texts.slice(0, 50) }]);
+          const answerRes = await generateConversationalAnswer(currentHistory, query, searchRes.texts.slice(0, 10), (aiRes as any).lang || "en");
+
+          setChatHistory(prev => [...prev, { 
+            id: (Date.now() + 1).toString(), 
+            role: "ai", 
+            reasoning: aiRes.reasoning, 
+            content: answerRes.text || "Here are some articles I found:",
+            articles: searchRes.texts.slice(0, 10),
+            isError: !!answerRes.error
+          }]);
         } else {
-          setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", reasoning: aiRes.reasoning, content: "No articles found.", isError: true }]);
+          setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", reasoning: aiRes.reasoning, content: "I could not find any relevant articles on JW.org.", isError: true }]);
         }
       } else {
-        setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "Error extracting keywords.", isError: true }]);
+        setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "Error understanding the question.", isError: true }]);
       }
     } catch (err) {
       console.error(err);
@@ -206,47 +224,52 @@ export default function Hero() {
       {/* Dynamic Chat Area */}
       <div className="chat-history-container hide-scrollbar" style={{ zIndex: 10 }}>
         {chatHistory.map((msg) => (
-          <div key={msg.id} className={`chat-message-row ${msg.role}`}>
-            <div className={`chat-bubble ${msg.role} ${msg.isError ? 'error' : ''}`}>
+          <div key={msg.id} className={`chat-message-row ${msg.role}`} style={{ display: "flex", gap: "12px", alignItems: "flex-start", width: "100%", justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+            {msg.role === 'ai' && (
+              <div style={{ background: "var(--color-primary)", color: "#fff", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Bot size={20} />
+              </div>
+            )}
+            <div className={`chat-bubble ${msg.role} ${msg.isError ? 'error' : ''}`} style={{ maxWidth: "85%", borderRadius: "16px", padding: "16px", textAlign: "left", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", background: msg.role === 'user' ? "var(--color-bg-alt)" : "var(--color-bg)", border: "1px solid var(--color-border)" }}>
               {msg.reasoning && (
                 <details className="reasoning-container">
-                  <summary className="reasoning-toggle" style={{ listStyle: "none" }}>
+                  <summary className="reasoning-toggle" style={{ listStyle: "none", cursor: "pointer", fontSize: "0.85rem", color: "var(--color-text-muted)", display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                     Thought Process
                   </summary>
-                  <div className="reasoning-content">
+                  <div className="reasoning-content" style={{ fontSize: "0.85rem", padding: "8px", background: "rgba(0,0,0,0.03)", borderRadius: "8px", marginBottom: "12px" }}>
                     {msg.reasoning}
                   </div>
                 </details>
               )}
               {msg.content && (
-                <div style={{ color: msg.isError ? "#ff4d4f" : "inherit" }}>
+                <div style={{ color: msg.isError ? "#ff4d4f" : "var(--color-text)", fontSize: "1rem", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
                   {msg.content}
                 </div>
               )}
               {msg.articles && msg.articles.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <p style={{ margin: "0 0 8px", fontSize: "0.9rem", color: "var(--color-text-muted)" }}>
-                    Here is what I found:
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid var(--color-border)" }}>
+                  <p style={{ margin: "0 0 4px", fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    Sources from JW.org:
                   </p>
                   {msg.articles.map((article, i) => (
                     <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
                       display: "block",
                       padding: "12px",
-                      background: "var(--color-bg)",
+                      background: "var(--color-bg-alt)",
                       border: "1px solid var(--color-border)",
-                      borderRadius: "12px",
+                      borderRadius: "10px",
                       textDecoration: "none",
-                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+                      transition: "all 0.2s ease",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
                       textAlign: "left"
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "var(--color-primary)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
                     >
-                      <h4 style={{ color: "var(--color-primary-dark)", margin: "0 0 4px 0", fontSize: "0.95rem", lineHeight: 1.3 }}>{article.title}</h4>
+                      <h4 style={{ color: "var(--color-primary)", margin: "0 0 6px 0", fontSize: "0.95rem", lineHeight: 1.3 }}>{article.title}</h4>
                       <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.85rem", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                         {article.description}
                       </p>
@@ -255,13 +278,21 @@ export default function Hero() {
                 </div>
               )}
             </div>
+            {msg.role === 'user' && (
+              <div style={{ background: "var(--color-text)", color: "var(--color-bg)", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <User size={20} />
+              </div>
+            )}
           </div>
         ))}
         
         {isAiLoading && (
-          <div className="chat-message-row ai">
-            <div className="chat-bubble ai">
-              <div className="typing-indicator">
+          <div className="chat-message-row ai" style={{ display: "flex", gap: "12px", alignItems: "flex-start", width: "100%" }}>
+            <div style={{ background: "var(--color-primary)", color: "#fff", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Bot size={20} />
+            </div>
+            <div className="chat-bubble ai" style={{ maxWidth: "85%", borderRadius: "16px", padding: "16px", background: "var(--color-bg)", border: "1px solid var(--color-border)", display: "flex", alignItems: "center" }}>
+              <div className="typing-indicator" style={{ margin: 0 }}>
                 <div className="typing-dot"></div>
                 <div className="typing-dot"></div>
                 <div className="typing-dot"></div>
