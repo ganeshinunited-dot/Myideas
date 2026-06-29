@@ -249,34 +249,7 @@ export default function Hero() {
                   {msg.content}
                 </div>
               )}
-              {msg.articles && msg.articles.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid var(--color-border)" }}>
-                  <p style={{ margin: "0 0 4px", fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    Sources from JW.org:
-                  </p>
-                  {msg.articles.map((article, i) => (
-                    <a key={i} href={article.link} target="_blank" rel="noopener noreferrer" style={{
-                      display: "block",
-                      padding: "12px",
-                      background: "var(--color-bg-alt)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "10px",
-                      textDecoration: "none",
-                      transition: "all 0.2s ease",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-                      textAlign: "left"
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "var(--color-primary)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
-                    >
-                      <h4 style={{ color: "var(--color-primary)", margin: "0 0 6px 0", fontSize: "0.95rem", lineHeight: 1.3 }}>{article.title}</h4>
-                      <p style={{ color: "var(--color-text-muted)", margin: 0, fontSize: "0.85rem", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {article.description}
-                      </p>
-                    </a>
-                  ))}
-                </div>
-              )}
+
             </div>
             {msg.role === 'user' && (
               <div style={{ background: "var(--color-text)", color: "var(--color-bg)", padding: "8px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
