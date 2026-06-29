@@ -115,20 +115,20 @@ export default function Hero() {
     setChatHistory(currentHistory);
     
     try {
+      let searchResults: any[] = [];
       const res: any = await searchJW(emotion.query, "all", lang); 
-      if (res && res.texts && res.texts.length > 0) {
-        const answerRes = await generateConversationalAnswer(currentHistory, emotion.query, res.texts.slice(0, 10), lang);
-        
-        setChatHistory(prev => [...prev, { 
-          id: (Date.now() + 1).toString(), 
-          role: "ai", 
-          content: answerRes.text || "Here are some articles I found:",
-          articles: res.texts.slice(0, 10),
-          isError: !!answerRes.error
-        }]);
-      } else {
-        setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "I couldn't find any articles about this.", isError: true }]);
+      if (res && res.texts) {
+        searchResults = res.texts.slice(0, 5);
       }
+      
+      const answerRes = await generateConversationalAnswer(currentHistory, emotion.query, searchResults, lang);
+      
+      setChatHistory(prev => [...prev, { 
+        id: (Date.now() + 1).toString(), 
+        role: "ai", 
+        content: answerRes.text || "I'm not sure how to respond to that.",
+        isError: !!answerRes.error
+      }]);
     } catch (err) {
       console.error(err);
       setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "Error fetching articles.", isError: true }]);
@@ -157,22 +157,29 @@ export default function Hero() {
         return;
       }
 
-      if ("keywords" in aiRes && aiRes.keywords) {
-        const searchRes: any = await searchJW(aiRes.keywords as string, "all", (aiRes as any).lang || "en");
-        if (searchRes && searchRes.texts && searchRes.texts.length > 0) {
-          const answerRes = await generateConversationalAnswer(currentHistory, query, searchRes.texts.slice(0, 10), (aiRes as any).lang || "en");
-
-          setChatHistory(prev => [...prev, { 
-            id: (Date.now() + 1).toString(), 
-            role: "ai", 
-            reasoning: aiRes.reasoning, 
-            content: answerRes.text || "Here are some articles I found:",
-            articles: searchRes.texts.slice(0, 10),
-            isError: !!answerRes.error
-          }]);
-        } else {
-          setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", reasoning: aiRes.reasoning, content: "I could not find any relevant articles on JW.org.", isError: true }]);
+      if ("keywords" in aiRes) {
+        let searchResults: any[] = [];
+        if (aiRes.keywords && typeof aiRes.keywords === "string" && aiRes.keywords.trim() !== "") {
+          try {
+            const searchRes: any = await searchJW(aiRes.keywords, "all", (aiRes as any).lang || "en");
+            if (searchRes && searchRes.texts) {
+              searchResults = searchRes.texts.slice(0, 5);
+            }
+          } catch (e) {
+            console.error("Search JW Error:", e);
+          }
         }
+        
+        // Always pass to conversational AI so it can reply to small talk
+        const answerRes = await generateConversationalAnswer(currentHistory, query, searchResults, (aiRes as any).lang || "en");
+
+        setChatHistory(prev => [...prev, { 
+          id: (Date.now() + 1).toString(), 
+          role: "ai", 
+          reasoning: aiRes.reasoning, 
+          content: answerRes.text || "I'm not sure how to respond to that.",
+          isError: !!answerRes.error
+        }]);
       } else {
         setChatHistory(prev => [...prev, { id: (Date.now() + 1).toString(), role: "ai", content: "Error understanding the question.", isError: true }]);
       }
