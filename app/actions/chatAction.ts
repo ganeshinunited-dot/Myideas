@@ -155,3 +155,96 @@ async function processWithGroqFallback(userInput: string, token: string, prompt:
   }
 }
 
+export async function generateSpeechAI(topic: string, duration: string) {
+  const doToken = process.env.DO_AI_KEY;
+  const groqToken = process.env.GROQ_API_KEY;
+  
+  if (!doToken && !groqToken) {
+    return { error: "AI API keys are missing." };
+  }
+
+  // Determine length instruction based on duration
+  let lengthInstruction = "";
+  if (duration === "5 minutes") {
+    lengthInstruction = "Write a short speech that takes about 5 minutes to read (approx 600-750 words).";
+  } else if (duration === "10 minutes") {
+    lengthInstruction = "Write a medium-length speech that takes about 10 minutes to read (approx 1200-1500 words).";
+  } else if (duration === "30 minutes") {
+    lengthInstruction = "Write a long, detailed, and comprehensive speech that takes about 30 minutes to read (approx 3500-4000 words).";
+  } else {
+    lengthInstruction = "Write a speech.";
+  }
+
+  const prompt = `You are an expert speechwriter. Write a powerful, engaging, and inspiring speech in English about the following topic: "${topic}".
+${lengthInstruction}
+Ensure the speech has a strong opening, a well-structured body with compelling points, and a memorable conclusion. Do not include any meta-text, just the speech itself.`;
+
+  const useDigitalOcean = !!doToken;
+  const apiUrl = useDigitalOcean
+    ? "https://inference.do-ai.run/v1/chat/completions"
+    : "https://api.groq.com/openai/v1/chat/completions";
+  const apiKey = useDigitalOcean ? doToken : groqToken;
+  const model = useDigitalOcean ? "llama3.3-70b-instruct" : "llama-3.3-70b-versatile";
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      signal: AbortSignal.timeout(30000), // Longer timeout for speech generation
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: "You are a professional speechwriter." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7
+      })
+    });
+
+    if (!res.ok) {
+      if (useDigitalOcean && groqToken) {
+        return generateSpeechGroqFallback(prompt, groqToken);
+      }
+      return { error: "Failed to generate speech." };
+    }
+
+    const data = await res.json();
+    return { text: data.choices?.[0]?.message?.content || "" };
+  } catch (error) {
+    if (useDigitalOcean && groqToken) {
+      return generateSpeechGroqFallback(prompt, groqToken);
+    }
+    return { error: "Failed to connect to AI server." };
+  }
+}
+
+async function generateSpeechGroqFallback(prompt: string, token: string) {
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: "You are a professional speechwriter." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7
+      })
+    });
+
+    if (!res.ok) return { error: "Both AI providers failed." };
+
+    const data = await res.json();
+    return { text: data.choices?.[0]?.message?.content || "" };
+  } catch {
+    return { error: "All AI servers unreachable." };
+  }
+}
+

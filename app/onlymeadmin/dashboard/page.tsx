@@ -2,14 +2,19 @@
 import { useState, useEffect } from "react";
 import { createBlog, getBlogs, deleteBlog, BlogPost } from "@/app/actions/blogActions";
 import { logoutAdmin } from "@/app/actions/authActions";
+import { generateSpeechAI } from "@/app/actions/chatAction";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus, LogOut } from "lucide-react";
+import { Trash2, Plus, LogOut, Bot } from "lucide-react";
 
 export default function AdminDashboard() {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [isWriting, setIsWriting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [speechDuration, setSpeechDuration] = useState("5 minutes");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -29,11 +34,28 @@ export default function AdminDashboard() {
     const res = await createBlog(formData);
     if (res.success) {
       setIsWriting(false);
+      setTitle("");
+      setContent("");
       loadBlogs();
     } else {
       alert(res.error || "Failed to publish");
     }
     setSubmitting(false);
+  };
+
+  const handleAIGenerate = async () => {
+    if (!title.trim()) {
+      alert("Please enter a speech topic/title first!");
+      return;
+    }
+    setAiLoading(true);
+    const res = await generateSpeechAI(title, speechDuration);
+    if (res.error) {
+      alert(res.error);
+    } else {
+      setContent(res.text || "");
+    }
+    setAiLoading(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -61,20 +83,20 @@ export default function AdminDashboard() {
         {!isWriting ? (
           <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-              <h2 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-text)" }}>Your Posts</h2>
+              <h2 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-text)" }}>Your Speeches</h2>
               <button 
                 onClick={() => setIsWriting(true)}
                 style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--color-primary)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "8px", fontWeight: 500, cursor: "pointer" }}
               >
-                <Plus size={16} /> Write Post
+                <Plus size={16} /> Write Speech
               </button>
             </div>
 
             {loading ? (
-              <p style={{ color: "var(--color-text-muted)" }}>Loading posts...</p>
+              <p style={{ color: "var(--color-text-muted)" }}>Loading speeches...</p>
             ) : blogs.length === 0 ? (
               <div style={{ background: "var(--color-bg)", padding: "40px", borderRadius: "12px", textAlign: "center", color: "var(--color-text-muted)", border: "1px dashed var(--color-border)" }}>
-                No posts yet. Write your first blog!
+                No speeches yet. Generate your first speech!
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -95,14 +117,28 @@ export default function AdminDashboard() {
         ) : (
           <div style={{ background: "var(--color-bg)", padding: "20px", borderRadius: "12px", border: "1px solid var(--color-border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h2 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-text)" }}>Write New Post</h2>
+              <h2 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-text)" }}>Generate / Write Speech</h2>
               <button onClick={() => setIsWriting(false)} style={{ background: "transparent", border: "none", color: "var(--color-text-muted)", fontSize: "0.9rem", cursor: "pointer" }}>Cancel</button>
             </div>
 
             <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text)" }}>Title</label>
-                <input name="title" required placeholder="Catchy title here..." style={{ padding: "12px", borderRadius: "8px", border: "1px solid var(--color-border)", fontSize: "1rem", outline: "none" }} />
+                <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text)" }}>Speech Topic / Title</label>
+                <input name="title" value={title} onChange={e => setTitle(e.target.value)} required placeholder="Topic of the speech..." style={{ padding: "12px", borderRadius: "8px", border: "1px solid var(--color-border)", fontSize: "1rem", outline: "none" }} />
+              </div>
+
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap", background: "var(--color-bg-alt)", padding: "16px", borderRadius: "8px", border: "1px solid var(--color-border)" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, minWidth: "150px" }}>
+                  <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text)" }}>Duration</label>
+                  <select value={speechDuration} onChange={e => setSpeechDuration(e.target.value)} style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--color-border)", fontSize: "0.9rem", outline: "none", background: "var(--color-bg)" }}>
+                    <option value="5 minutes">5 minutes</option>
+                    <option value="10 minutes">10 minutes</option>
+                    <option value="30 minutes">30 minutes</option>
+                  </select>
+                </div>
+                <button type="button" onClick={handleAIGenerate} disabled={aiLoading} style={{ display: "flex", alignItems: "center", gap: 8, background: "#10b981", color: "#fff", padding: "10px 16px", borderRadius: "8px", border: "none", fontWeight: 600, fontSize: "0.9rem", cursor: aiLoading ? "not-allowed" : "pointer", opacity: aiLoading ? 0.7 : 1, whiteSpace: "nowrap" }}>
+                  <Bot size={18} /> {aiLoading ? "Generating..." : "Generate AI Speech"}
+                </button>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -113,11 +149,11 @@ export default function AdminDashboard() {
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <label style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-text)" }}>Content</label>
-                <textarea name="content" required placeholder="Write your amazing post here..." style={{ padding: "12px", borderRadius: "8px", border: "1px solid var(--color-border)", fontSize: "1rem", minHeight: "200px", outline: "none", resize: "vertical", fontFamily: "inherit" }} />
+                <textarea name="content" value={content} onChange={e => setContent(e.target.value)} required placeholder="Write your speech or generate with AI..." style={{ padding: "12px", borderRadius: "8px", border: "1px solid var(--color-border)", fontSize: "1rem", minHeight: "300px", outline: "none", resize: "vertical", fontFamily: "inherit" }} />
               </div>
 
               <button type="submit" disabled={submitting} style={{ background: "var(--color-primary)", color: "#fff", padding: "14px", borderRadius: "8px", border: "none", fontWeight: 600, fontSize: "1rem", cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.7 : 1, marginTop: 8 }}>
-                {submitting ? "Publishing..." : "Publish Post"}
+                {submitting ? "Publishing..." : "Publish Speech"}
               </button>
             </form>
           </div>

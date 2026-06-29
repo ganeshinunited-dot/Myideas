@@ -15,7 +15,7 @@ const linkDefs = [
   { id: "Home", href: "/", icon: <HomeIcon /> },
   { id: "About", href: "/about", icon: <InfoIcon /> },
   { id: "Search JW", href: "/search-jw", icon: <SearchIcon /> },
-  { id: "Blog", href: "/blog", icon: <BookOpenIcon /> },
+  { id: "Blog", href: "/speech", icon: <BookOpenIcon /> },
 ];
 
 export default function Navbar() {
