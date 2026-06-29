@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import { generateSpeechAI } from "@/app/actions/chatAction";
-import { Bot, Copy, CheckCircle } from "lucide-react";
+import { FileText, Copy, CheckCircle } from "lucide-react";
 
 export default function SpeechGeneratorPage() {
   const [topic, setTopic] = useState("");
@@ -42,10 +42,10 @@ export default function SpeechGeneratorPage() {
       <div style={{ flex: 1, padding: "100px 20px 80px", maxWidth: "800px", margin: "0 auto", width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <h1 style={{ fontSize: "clamp(2rem, 5vw, 2.5rem)", fontWeight: 800, color: "var(--color-primary)", letterSpacing: "-0.03em", marginBottom: 8 }}>
-            AI Speech Generator
+            Make Speech
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "1.05rem" }}>
-            Generate powerful, engaging speeches instantly using advanced AI.
+            Create powerful, well-researched, and engaging speeches instantly.
           </p>
         </div>
 
@@ -105,14 +105,14 @@ export default function SpeechGeneratorPage() {
               disabled={loading}
               style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "var(--color-primary)", color: "#fff", padding: "16px", borderRadius: "12px", border: "none", fontWeight: 600, fontSize: "1.05rem", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, marginTop: 10 }}
             >
-              <Bot size={20} /> {loading ? "Generating Speech..." : "Generate AI Speech"}
+              <FileText size={20} /> {loading ? "Preparing Speech..." : "Make Speech"}
             </button>
           </form>
 
           {speechContent && (
             <div style={{ marginTop: 40, borderTop: "1px solid var(--color-border)", paddingTop: 30 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <h2 style={{ fontSize: "1.3rem", fontWeight: 700, color: "var(--color-text)" }}>Your Generated Speech</h2>
+                <h2 style={{ fontSize: "1.3rem", fontWeight: 700, color: "var(--color-text)" }}>Your Speech</h2>
                 <button 
                   onClick={handleCopy}
                   style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--color-bg-alt)", border: "1px solid var(--color-border)", color: "var(--color-text)", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", fontSize: "0.9rem", fontWeight: 500 }}

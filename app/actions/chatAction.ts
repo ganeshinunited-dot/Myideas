@@ -187,6 +187,7 @@ export async function generateSpeechAI(topic: string, duration: string, language
 ${lengthInstruction}
 ${verseInstruction}
 ${langInstruction}
+CRITICAL INSTRUCTION: Your speech MUST be based strictly and entirely on JW.org resources and teachings. When quoting or referring to Bible verses, you MUST ONLY use the New World Translation (NWT) as provided on JW.org. Do NOT use verses or teachings from any other source.
 Ensure the speech has a strong opening, a well-structured body with compelling points, and a memorable conclusion. If the language is Nepali, ensure it starts with a warm greeting like 'आदरणीय दाजुभाइ तथा दिदीबहिनीहरू' and flows engagingly. Do not include any meta-text, just the speech itself.`;
 
   const useDigitalOcean = !!doToken;
