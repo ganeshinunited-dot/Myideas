@@ -155,7 +155,7 @@ async function processWithGroqFallback(userInput: string, token: string, prompt:
   }
 }
 
-export async function generateSpeechAI(topic: string, duration: string) {
+export async function generateSpeechAI(topic: string, duration: string): Promise<{ text?: string; error?: string }> {
   const doToken = process.env.DO_AI_KEY;
   const groqToken = process.env.GROQ_API_KEY;
   
@@ -221,7 +221,7 @@ Ensure the speech has a strong opening, a well-structured body with compelling p
   }
 }
 
-async function generateSpeechGroqFallback(prompt: string, token: string) {
+async function generateSpeechGroqFallback(prompt: string, token: string): Promise<{ text?: string; error?: string }> {
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
