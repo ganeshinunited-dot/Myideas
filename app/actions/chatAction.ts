@@ -180,14 +180,14 @@ export async function generateSpeechAI(topic: string, duration: string, language
     : "";
 
   const langInstruction = language === "Nepali" 
-    ? "MUST BE ENTIRELY IN NEPALI LANGUAGE (Devanagari script). Do not use English."
-    : "MUST BE IN ENGLISH.";
+    ? "MUST BE ENTIRELY IN NEPALI LANGUAGE (Devanagari script). Do not use English. The tone MUST be highly natural, warm, and human-like, using conversational Nepali (e.g., 'तपाईंहरूलाई थाहै छ', 'हैन र?'). Avoid robotic or purely literal translations. Apply the points practically and organically as if a real person is speaking from a stage."
+    : "MUST BE IN ENGLISH. Make it sound natural and engaging.";
 
   const prompt = `You are an expert speechwriter. Write a powerful, engaging, and inspiring speech about the following subject/theme: "${topic}".
 ${lengthInstruction}
 ${verseInstruction}
-The language of the speech ${langInstruction}
-Ensure the speech has a strong opening, a well-structured body with compelling points, and a memorable conclusion. Do not include any meta-text, just the speech itself.`;
+${langInstruction}
+Ensure the speech has a strong opening, a well-structured body with compelling points, and a memorable conclusion. If the language is Nepali, ensure it starts with a warm greeting like 'आदरणीय दाजुभाइ तथा दिदीबहिनीहरू' and flows engagingly. Do not include any meta-text, just the speech itself.`;
 
   const useDigitalOcean = !!doToken;
   const apiUrl = useDigitalOcean
