@@ -7,6 +7,8 @@ import { Bot, Copy, CheckCircle } from "lucide-react";
 export default function SpeechGeneratorPage() {
   const [topic, setTopic] = useState("");
   const [duration, setDuration] = useState("5 minutes");
+  const [language, setLanguage] = useState("Nepali");
+  const [bibleVerse, setBibleVerse] = useState("");
   const [loading, setLoading] = useState(false);
   const [speechContent, setSpeechContent] = useState("");
   const [copied, setCopied] = useState(false);
@@ -18,7 +20,7 @@ export default function SpeechGeneratorPage() {
     setLoading(true);
     setSpeechContent("");
     
-    const res = await generateSpeechAI(topic, duration);
+    const res = await generateSpeechAI(topic, duration, language, bibleVerse);
     if (res.error) {
       alert(res.error);
     } else {
@@ -43,7 +45,7 @@ export default function SpeechGeneratorPage() {
             AI Speech Generator
           </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "1.05rem" }}>
-            Generate powerful, engaging speeches in English instantly using advanced AI.
+            Generate powerful, engaging speeches instantly using advanced AI.
           </p>
         </div>
 
@@ -51,7 +53,7 @@ export default function SpeechGeneratorPage() {
           <form onSubmit={handleGenerate} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <label style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-text)" }}>What should the speech be about?</label>
+              <label style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-text)" }}>Subject(s) / Theme(s) of the Speech</label>
               <input 
                 value={topic}
                 onChange={e => setTopic(e.target.value)}
@@ -62,16 +64,40 @@ export default function SpeechGeneratorPage() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <label style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-text)" }}>Duration</label>
-              <select 
-                value={duration} 
-                onChange={e => setDuration(e.target.value)}
-                style={{ padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--color-border)", fontSize: "1rem", outline: "none", background: "var(--color-bg-alt)", color: "var(--color-text)", cursor: "pointer" }}
-              >
-                <option value="5 minutes">5 minutes (Short & Sweet)</option>
-                <option value="10 minutes">10 minutes (Standard)</option>
-                <option value="30 minutes">30 minutes (Deep Dive)</option>
-              </select>
+              <label style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-text)" }}>Bible Verse (Optional)</label>
+              <textarea 
+                value={bibleVerse}
+                onChange={e => setBibleVerse(e.target.value)}
+                placeholder="Paste a Bible verse here to weave into the speech..."
+                style={{ padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--color-border)", fontSize: "1rem", outline: "none", background: "var(--color-bg-alt)", color: "var(--color-text)", minHeight: "80px", resize: "vertical", fontFamily: "inherit" }}
+              />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <label style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-text)" }}>Language</label>
+                <select 
+                  value={language} 
+                  onChange={e => setLanguage(e.target.value)}
+                  style={{ padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--color-border)", fontSize: "1rem", outline: "none", background: "var(--color-bg-alt)", color: "var(--color-text)", cursor: "pointer" }}
+                >
+                  <option value="Nepali">Nepali</option>
+                  <option value="English">English</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <label style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-text)" }}>Duration</label>
+                <select 
+                  value={duration} 
+                  onChange={e => setDuration(e.target.value)}
+                  style={{ padding: "14px 16px", borderRadius: "12px", border: "1px solid var(--color-border)", fontSize: "1rem", outline: "none", background: "var(--color-bg-alt)", color: "var(--color-text)", cursor: "pointer" }}
+                >
+                  <option value="5 minutes">5 minutes</option>
+                  <option value="10 minutes">10 minutes</option>
+                  <option value="30 minutes">30 minutes</option>
+                </select>
+              </div>
             </div>
 
             <button 

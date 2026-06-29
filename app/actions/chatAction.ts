@@ -155,7 +155,7 @@ async function processWithGroqFallback(userInput: string, token: string, prompt:
   }
 }
 
-export async function generateSpeechAI(topic: string, duration: string): Promise<{ text?: string; error?: string }> {
+export async function generateSpeechAI(topic: string, duration: string, language: string = "English", bibleVerse: string = ""): Promise<{ text?: string; error?: string }> {
   const doToken = process.env.DO_AI_KEY;
   const groqToken = process.env.GROQ_API_KEY;
   
@@ -166,17 +166,27 @@ export async function generateSpeechAI(topic: string, duration: string): Promise
   // Determine length instruction based on duration
   let lengthInstruction = "";
   if (duration === "5 minutes") {
-    lengthInstruction = "Write a short speech that takes about 5 minutes to read (approx 600-750 words).";
+    lengthInstruction = language === "Nepali" ? "Write a short speech that takes about 5 minutes to read (approx 400-500 words)." : "Write a short speech that takes about 5 minutes to read (approx 600-750 words).";
   } else if (duration === "10 minutes") {
-    lengthInstruction = "Write a medium-length speech that takes about 10 minutes to read (approx 1200-1500 words).";
+    lengthInstruction = language === "Nepali" ? "Write a medium-length speech that takes about 10 minutes to read (approx 800-1000 words)." : "Write a medium-length speech that takes about 10 minutes to read (approx 1200-1500 words).";
   } else if (duration === "30 minutes") {
-    lengthInstruction = "Write a long, detailed, and comprehensive speech that takes about 30 minutes to read (approx 3500-4000 words).";
+    lengthInstruction = language === "Nepali" ? "Write a long speech that takes about 30 minutes to read (approx 2500-3000 words)." : "Write a long, detailed, and comprehensive speech that takes about 30 minutes to read (approx 3500-4000 words).";
   } else {
     lengthInstruction = "Write a speech.";
   }
 
-  const prompt = `You are an expert speechwriter. Write a powerful, engaging, and inspiring speech in English about the following topic: "${topic}".
+  let verseInstruction = bibleVerse.trim() 
+    ? `Please seamlessly integrate this Bible verse into the speech: "${bibleVerse}".`
+    : "";
+
+  const langInstruction = language === "Nepali" 
+    ? "MUST BE ENTIRELY IN NEPALI LANGUAGE (Devanagari script). Do not use English."
+    : "MUST BE IN ENGLISH.";
+
+  const prompt = `You are an expert speechwriter. Write a powerful, engaging, and inspiring speech about the following subject/theme: "${topic}".
 ${lengthInstruction}
+${verseInstruction}
+The language of the speech ${langInstruction}
 Ensure the speech has a strong opening, a well-structured body with compelling points, and a memorable conclusion. Do not include any meta-text, just the speech itself.`;
 
   const useDigitalOcean = !!doToken;
